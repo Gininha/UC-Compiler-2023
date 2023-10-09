@@ -91,7 +91,7 @@ semi                            ";"
 <Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE }
 <Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0; }
 <Comment>.                      { ; }
-{single_line_comm}              { ; }
+{single_line_comm}              { ADDLINE }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column, yytext); }
