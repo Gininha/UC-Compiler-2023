@@ -23,7 +23,7 @@ words                           char|else|while|if|int|short|double|return|void
 digit                           [0-9]
 decimal                         ([0-9]+"."(([eE][+-]?[0-9]+)|[0-9]+|([0-9]+[eE][+-]?[0-9]+))?)|("."[0-9]+([eE][+-]?[0-9]+)?)|([0-9]+([eE][+-]?[0-9]+))
 identifier                      [a-zA-Z_][0-9a-zA-Z_]*
-blank_spaces                    \t|\f|" "
+blank_spaces                    \t|" "
 new_line                        "\n"|"\r"|"\r\n"
 begin_comment                   "/*"
 exit_comment                    "*/"
