@@ -1,9 +1,13 @@
+/*
+2020217743 Gustavo Samuel de Alves e Bastos de André e Lima
+2021199102 Luis Miguel Gonçalves Leite
+*/
 %{
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
 
-    #define YY_USER_ACTION column+=yyleng;
+    #define YY_USER_ACTION column += yyleng;
     #define ADDLINE line++; column=0;
 
     int line = 1;
@@ -84,10 +88,10 @@ semi                            ";"
 {rbrace}                        { printf("RBRACE\n"); }
 {rpar}                          { printf("RPAR\n"); }
 {semi}                          { printf("SEMI\n"); }
-{blank_spaces}                  { if(strcmp(yytext, "\n") == 0) ADDLINE; }
-{begin_comment}                 { line_comm = line; column_comm = column;  BEGIN Comment; }
+{blank_spaces}                  { if(strcmp(yytext, "\n") == 0) ADDLINE }
+{begin_comment}                 { line_comm = line; column_comm = column; BEGIN Comment; }
 <Comment>{exit_comment}         { BEGIN 0; }
-<Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE; }
+<Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE }
 <Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0; }
 <Comment>.                      { ; }
 {single_line_comm}              { ; }
