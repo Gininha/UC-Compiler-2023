@@ -91,7 +91,7 @@ semi                            ";"
 {begin_comment}                 { line_comm = line; column_comm = column; BEGIN Comment; }
 <Comment>{exit_comment}         { BEGIN 0; }
 <Comment>{new_line}             { ADDLINE }
-<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); }
+<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); return 0; }
 <Comment>.                      { ; }
 {single_line_comm}              { ADDLINE }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
