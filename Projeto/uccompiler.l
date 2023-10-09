@@ -23,7 +23,8 @@ words                           char|else|while|if|int|short|double|return|void
 digit                           [0-9]
 decimal                         ([0-9]+"."(([eE][+-]?[0-9]+)|[0-9]+|([0-9]+[eE][+-]?[0-9]+))?)|("."[0-9]+([eE][+-]?[0-9]+)?)|([0-9]+([eE][+-]?[0-9]+))
 identifier                      [a-zA-Z_][0-9a-zA-Z_]*
-blank_spaces                    \t|\n|" "|"\r"
+blank_spaces                    \t|\f|" "
+new_line                        "\n"|"\r"|"\r\n"
 begin_comment                   "/*"
 exit_comment                    "*/"
 charlit                         [^\n\'\\]|\\n|\\t|\\\\|\\\'|\\\"|\\[0-7]?[0-7]?[0-7]?
@@ -57,7 +58,7 @@ semi                            ";"
 
 %%
 {reserved}                      { printf("RESERVED(%s)\n", yytext); }
-{words}                         { for(int i=0; i<yyleng; i++){yytext[i] = toupper(yytext[i]);}printf("%s\n", yytext); }
+{words}                         { for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} printf("%s\n", yytext); }
 {digit}+                        { printf("NATURAL(%s)\n", yytext); }
 {decimal}                       { printf("DECIMAL(%s)\n", yytext); }
 {identifier}                    { printf("IDENTIFIER(%s)\n", yytext); }
@@ -85,11 +86,12 @@ semi                            ";"
 {rbrace}                        { printf("RBRACE\n"); }
 {rpar}                          { printf("RPAR\n"); }
 {semi}                          { printf("SEMI\n"); }
-{blank_spaces}                  { if(strcmp(yytext, "\n") == 0) ADDLINE }
+{blank_spaces}                  { ; }
+{new_line}                      { ADDLINE }
 {begin_comment}                 { line_comm = line; column_comm = column; BEGIN Comment; }
 <Comment>{exit_comment}         { BEGIN 0; }
-<Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE }
-<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0; }
+<Comment>{new_line}             { ADDLINE }
+<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); }
 <Comment>.                      { ; }
 {single_line_comm}              { ADDLINE }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
