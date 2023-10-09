@@ -91,13 +91,12 @@ semi                            ";"
 {begin_comment}                 { line_comm = line; column_comm = column - yyleng; BEGIN Comment; }
 <Comment>{exit_comment}         { BEGIN 0; }
 <Comment>{new_line}             { ADDLINE }
-<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); return 0; }
+<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0; }
 <Comment>.                      { ; }
 {single_line_comm}              { ; }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column - yyleng); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column - yyleng, yytext); }
-<<EOF>>                         { return 0; }
 .                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column - yyleng, yytext); }
 %%
 
