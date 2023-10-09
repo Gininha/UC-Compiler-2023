@@ -8,7 +8,7 @@
     #include <ctype.h>
 
     #define YY_USER_ACTION column += yyleng;
-    #define ADDLINE line++; column=1;
+    #define ADDLINE line++; column = 1;
 
     int line = 1, column = 1;
     int line_comm, column_comm;
