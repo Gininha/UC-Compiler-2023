@@ -84,16 +84,17 @@ semi                            ";"
 {rbrace}                        { printf("RBRACE\n"); }
 {rpar}                          { printf("RPAR\n"); }
 {semi}                          { printf("SEMI\n"); }
-{blank_spaces}                  { if(strcmp(yytext, "\n") == 0) ADDLINE;}
-{begin_comment}                 { line_comm = line; column_comm = column;  BEGIN Comment;}
-<Comment>{exit_comment}         { BEGIN 0;}
-<Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE;}
-<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0;}
+{blank_spaces}                  { if(strcmp(yytext, "\n") == 0) ADDLINE; }
+{begin_comment}                 { line_comm = line; column_comm = column;  BEGIN Comment; }
+<Comment>{exit_comment}         { BEGIN 0; }
+<Comment>{blank_spaces}         { if(strcmp(yytext, "\n") == 0) ADDLINE; }
+<Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); BEGIN 0; }
 <Comment>.                      { ; }
 {single_line_comm}              { ; }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
-{error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column); ADDLINE}
+{error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column, yytext); }
+<<EOF>>                         { return 0; }
 .                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column, yytext); }
 %%
 
