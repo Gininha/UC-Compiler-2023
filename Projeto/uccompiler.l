@@ -10,11 +10,8 @@
     #define YY_USER_ACTION column += yyleng;
     #define ADDLINE line++; column=0;
 
-    int line = 1;
-    int column = 0;
-
-    int line_comm = 0;
-    int column_comm = 1;
+    int line = 1, column = 0;
+    int line_comm, column_comm;
 
     char *string = NULL;
 %}
