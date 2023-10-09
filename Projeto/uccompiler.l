@@ -93,7 +93,7 @@ semi                            ";"
 <Comment>{new_line}             { ADDLINE }
 <Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); return 0; }
 <Comment>.                      { ; }
-{single_line_comm}              { ADDLINE }
+{single_line_comm}              { ; }
 '{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column - yyleng + 1); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column - yyleng + 1, yytext); }
