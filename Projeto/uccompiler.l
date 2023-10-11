@@ -10,6 +10,8 @@
     #define YY_USER_ACTION column += yyleng;
     #define ADDLINE line++; column = 1;
 
+    int l = 0;
+
     int line = 1, column = 1;
     int line_comm, column_comm;
 
@@ -57,35 +59,35 @@ rpar                            ")"
 semi                            ";"
 
 %%
-{reserved}                      { printf("RESERVED(%s)\n", yytext); }
-{words}                         { for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} printf("%s\n", yytext); }
-{digit}+                        { printf("NATURAL(%s)\n", yytext); }
-{decimal}                       { printf("DECIMAL(%s)\n", yytext); }
-{identifier}                    { printf("IDENTIFIER(%s)\n", yytext); }
-{bitwiseand}                    { printf("BITWISEAND\n"); }
-{bitwiseor}                     { printf("BITWISEOR\n"); }
-{bitwisexor}                    { printf("BITWISEXOR\n"); }
-{and}                           { printf("AND\n"); }
-{assign}                        { printf("ASSIGN\n"); }
-{mul}                           { printf("MUL\n"); }
-{comma}                         { printf("COMMA\n"); }
-{div}                           { printf("DIV\n"); }
-{eq}                            { printf("EQ\n"); }
-{ge}                            { printf("GE\n"); }
-{gt}                            { printf("GT\n"); }
-{lbrace}                        { printf("LBRACE\n"); }
-{le}                            { printf("LE\n"); }
-{lpar}                          { printf("LPAR\n"); }
-{lt}                            { printf("LT\n"); }
-{minus}                         { printf("MINUS\n"); }
-{mod}                           { printf("MOD\n"); }
-{ne}                            { printf("NE\n"); }
-{not}                           { printf("NOT\n"); }
-{or}                            { printf("OR\n"); }
-{plus}                          { printf("PLUS\n"); }
-{rbrace}                        { printf("RBRACE\n"); }
-{rpar}                          { printf("RPAR\n"); }
-{semi}                          { printf("SEMI\n"); }
+{reserved}                      { if (l) printf("RESERVED(%s)\n", yytext); }
+{words}                         { if (l) {{for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} printf("%s\n", yytext); }} }
+{digit}+                        { if (l) printf("NATURAL(%s)\n", yytext); }
+{decimal}                       { if (l) printf("DECIMAL(%s)\n", yytext); }
+{identifier}                    { if (l) printf("IDENTIFIER(%s)\n", yytext); }
+{bitwiseand}                    { if (l) printf("BITWISEAND\n"); }
+{bitwiseor}                     { if (l) printf("BITWISEOR\n"); }
+{bitwisexor}                    { if (l) printf("BITWISEXOR\n"); }
+{and}                           { if (l) printf("AND\n"); }
+{assign}                        { if (l) printf("ASSIGN\n"); }
+{mul}                           { if (l) printf("MUL\n"); }
+{comma}                         { if (l) printf("COMMA\n"); }
+{div}                           { if (l) printf("DIV\n"); }
+{eq}                            { if (l) printf("EQ\n"); }
+{ge}                            { if (l) printf("GE\n"); }
+{gt}                            { if (l) printf("GT\n"); }
+{lbrace}                        { if (l) printf("LBRACE\n"); }
+{le}                            { if (l) printf("LE\n"); }
+{lpar}                          { if (l) printf("LPAR\n"); }
+{lt}                            { if (l) printf("LT\n"); }
+{minus}                         { if (l) printf("MINUS\n"); }
+{mod}                           { if (l) printf("MOD\n"); }
+{ne}                            { if (l) printf("NE\n"); }
+{not}                           { if (l) printf("NOT\n"); }
+{or}                            { if (l) printf("OR\n"); }
+{plus}                          { if (l) printf("PLUS\n"); }
+{rbrace}                        { if (l) printf("RBRACE\n"); }
+{rpar}                          { if (l) printf("RPAR\n"); }
+{semi}                          { if (l) printf("SEMI\n"); }
 {blank_spaces}                  { ; }
 {new_line}                      { ADDLINE }
 {begin_comment}                 { line_comm = line; column_comm = column - yyleng; BEGIN Comment; }
@@ -94,7 +96,7 @@ semi                            ";"
 <Comment><<EOF>>                { printf("Line %d, column %d: unterminated comment\n", line_comm, column_comm); return 0; }
 <Comment>.                      { ; }
 {single_line_comm}              { ; }
-'{charlit}'                     { printf("CHRLIT(%s)\n",yytext); }
+'{charlit}'                     { if (l) printf("CHRLIT(%s)\n",yytext); }
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column - yyleng); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column - yyleng, yytext); }
 <<EOF>>                         { return 0; }
@@ -102,7 +104,11 @@ semi                            ";"
 %%
 
 extern int yylex();
-int main() {
+int main(int argc, char * argv[]) {
+    if (argc > 1)
+        if (strcmp(argv[1], "-l") == 0)
+            l = 1;
+
     yylex();    /* run the lexical analysis automaton */
     return 0;
 }
