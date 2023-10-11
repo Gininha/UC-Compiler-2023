@@ -2,5 +2,5 @@
 ## Sintaxe para compilar:
 lex uccompiler.l<br/>
 cc lex.yy.c -o uccompiler<br/>
-## sintaxe para testes:
+## Sintaxe para testes:
 ./uccompiler < ficheiro.uc | diff ficheiro.out -
