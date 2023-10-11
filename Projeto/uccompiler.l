@@ -60,7 +60,7 @@ semi                            ";"
 
 %%
 {reserved}                      { if (l) printf("RESERVED(%s)\n", yytext); }
-{words}                         { if (l) {{for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} printf("%s\n", yytext); }} }
+{words}                         { if (l) { for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} printf("%s\n", yytext); } }
 {digit}+                        { if (l) printf("NATURAL(%s)\n", yytext); }
 {decimal}                       { if (l) printf("DECIMAL(%s)\n", yytext); }
 {identifier}                    { if (l) printf("IDENTIFIER(%s)\n", yytext); }
