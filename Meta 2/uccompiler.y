@@ -44,12 +44,12 @@ struct node *program;
 
 %%
 
-FunctionsAndDeclarations: FunctionDefinition                                {}
-                        | FunctionDeclaration                               {}
-                        | Declaration                                       {}
-                        | FunctionsAndDeclarations FunctionDefinition       {}
-                        | FunctionsAndDeclarations FunctionDeclaration      {}
-                        | FunctionsAndDeclarations Declaration              {}
+FunctionsAndDeclarations: FunctionDefinition                                {  }
+                        | FunctionDeclaration                               {  }
+                        | Declaration                                       {  }
+                        | FunctionsAndDeclarations FunctionDefinition       {  }
+                        | FunctionsAndDeclarations FunctionDeclaration      {  }
+                        | FunctionsAndDeclarations Declaration              {  }
                         ;
 
 FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {}
@@ -114,7 +114,7 @@ Aux_Statement: Statement                                                    {}
              ;
 
 Expr: Expr ASSIGN Expr                                                      {}
-    | Expr COMMA Expr                                                       {}
+    | Aux_Expr                                                              {}
     | Expr PLUS Expr                                                        {}
     | Expr MINUS Expr                                                       {}
     | Expr MUL Expr                                                         {}
