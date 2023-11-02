@@ -5,7 +5,7 @@
 int yylex(void);
 void yyerror(char *);
 
-struct node *program;
+struct node *program = newnode(Program, NULL);
 
 %}
 
@@ -44,12 +44,33 @@ struct node *program;
 
 %%
 
-FunctionsAndDeclarations: FunctionDefinition                                {  }
-                        | FunctionDeclaration                               {  }
-                        | Declaration                                       {  }
-                        | FunctionsAndDeclarations FunctionDefinition       {  }
-                        | FunctionsAndDeclarations FunctionDeclaration      {  }
-                        | FunctionsAndDeclarations Declaration              {  }
+FunctionsAndDeclarations: FunctionDefinition                                {   
+                                                                                $$ = program;
+                                                                                addchild($$, newnode(FunctionDefinition, NULL)); 
+                                                                            }
+                        | FunctionDeclaration                               {   
+                                                                                $$ = program;
+                                                                                addchild($$, newnode(FunctionDeclaration, NULL)); 
+                                                                            }
+                        | Declaration                                       {   
+                                                                                $$ = program;
+                                                                                addchild($$, newnode(Declaration, NULL)); 
+                                                                            }
+                        | FunctionsAndDeclarations FunctionDefinition       {   
+                                                                                $$ = $1;
+                                                                                addchild($$, newnode(FunctionDefinition, NULL));
+
+                                                                            }
+                        | FunctionsAndDeclarations FunctionDeclaration      { 
+                                                                                $$ = $1;    
+                                                                                addchild($$, newnode(FunctionDeclaration, NULL));
+                            
+                                                                            }
+                        | FunctionsAndDeclarations Declaration              { 
+                                                                                $$ = $1;    
+                                                                                addchild($$, newnode(Declaration, NULL));
+
+                                                                            }
                         ;
 
 FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {}
