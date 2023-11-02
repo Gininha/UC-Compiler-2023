@@ -8,7 +8,7 @@
 int yylex(void);
 void yyerror(char *);
 
-struct node *program = newnode(Program, NULL);
+struct node *program;
 
 %}
 
@@ -21,7 +21,7 @@ struct node *program = newnode(Program, NULL);
 
 %type<node> FunctionsAndDeclarations FunctionDefinition FunctionBody DeclarationsAndStatements
 %type<node> FunctionDeclaration FunctionDeclarator ParameterList ParameterDeclaration Declaration
-%type<node> TypeSpec Declarator Statement Expr
+%type<node> TypeSpec Declarator Statement Expr Program
 
 %union{
     char *token;
@@ -47,17 +47,19 @@ struct node *program = newnode(Program, NULL);
 
 %%
 
-FunctionsAndDeclarations: FunctionDefinition                                {   
-                                                                                $$ = program;
+Program: FunctionsAndDeclarations                                           {   
+                                                                                $$ = newnode(Program, NULL);
                                                                                 addchild($$, $1); 
+                                                                            }
+
+FunctionsAndDeclarations: FunctionDefinition                                {   
+                                                                                $$ = $1;
                                                                             }
                         | FunctionDeclaration                               {   
-                                                                                $$ = program;
-                                                                                addchild($$, $1); 
+                                                                                $$ = $1;
                                                                             }
                         | Declaration                                       {   
-                                                                                $$ = program;
-                                                                                addchild($$, $1); 
+                                                                                $$ = $1;
                                                                             }
                         | FunctionsAndDeclarations FunctionDefinition       {   
                                                                                 $$ = $1;
@@ -76,7 +78,7 @@ FunctionsAndDeclarations: FunctionDefinition                                {
                                                                             }
                         ;
 
-FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {
+FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody {
                                                                                 $$ = newnode(FuncDefinition, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
@@ -102,28 +104,25 @@ DeclarationsAndStatements: DeclarationsAndStatements Statement              {
                                                                                 addchild($$, $2);
                                                                             }
                          | Statement                                        {
-                                                                                $$ = newnode(DeclarationsAndStatements, NULL);
-                                                                                addchild($$, $1);
+                                                                                $$ = $1;
                                                                             }
                          | Declaration                                      {
-                                                                                $$ = newnode(DeclarationsAndStatements, NULL);
-                                                                                addchild($$, $1);
+                                                                                $$ = $1;
                                                                             }
                          ;
 
 FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {
-                                                                                $$ = newnode(FunctionDeclaration, NULL);
+                                                                                $$ = newnode(FuncDeclaration, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
                                                                             }
                    ;
 
 FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
-                                                                                $$ = newnode(FuncDeclarator, NULL);
-                                                                                addchild($$, newnode(Identifier, $1));
+                                                                                $$ = newnode(Identifier, $1);
                                                                                 addchild($$, $3);
+
                                                                             }
-                  ;
 
 ParameterList: ParameterDeclaration                                         {}
              | ParameterList COMMA ParameterDeclaration                     {}
