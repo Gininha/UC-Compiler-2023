@@ -27,18 +27,20 @@ struct node *program;
 
 %left LOW
 %left COMMA
-%right assign
+%right ASSIGN
 %left OR
 %left AND
-%left bitwiseor
-%left bitwisexor
-%left bitwiseand
+%left BITWISEOR
+%left BITWISEXOR
+%left BITWISEAND
 %left EQ NE
 %left GT LE GE LT
 %left PLUS MINUS
 %left MUL DIV MOD
 %right NOT
-%left LPAR RPAR '[' ']'
+%left LPAR RPAR 
+
+%nonassoc ELSE
 
 %%
 
@@ -141,7 +143,7 @@ Expr: Expr ASSIGN Expr                                                      {}
     | LPAR Expr RPAR                                                        {}
     ;
 
-Aux_Expr: Expr 
+Aux_Expr: Expr                                                              {}
         | Aux_Expr COMMA Expr                                               {}
         ;
 

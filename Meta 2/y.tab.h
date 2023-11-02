@@ -92,11 +92,7 @@ extern int yydebug;
     NATURAL = 293,                 /* NATURAL  */
     DECIMAL = 294,                 /* DECIMAL  */
     RESERVED = 295,                /* RESERVED  */
-    LOW = 296,                     /* LOW  */
-    assign = 297,                  /* assign  */
-    bitwiseor = 298,               /* bitwiseor  */
-    bitwisexor = 299,              /* bitwisexor  */
-    bitwiseand = 300               /* bitwiseand  */
+    LOW = 296                      /* LOW  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -144,10 +140,6 @@ extern int yydebug;
 #define DECIMAL 294
 #define RESERVED 295
 #define LOW 296
-#define assign 297
-#define bitwiseor 298
-#define bitwisexor 299
-#define bitwiseand 300
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -158,7 +150,7 @@ union YYSTYPE
     char *token;
     struct node *node;
 
-#line 162 "y.tab.h"
+#line 154 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
