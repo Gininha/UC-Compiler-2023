@@ -6,6 +6,9 @@
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
+    
+    #include "y.tab.h"
+    #include "ast.h"
 
     #define YY_USER_ACTION {y_line = line; y_column = column; column += yyleng;}
     #define ADDLINE line++; column = 1;
@@ -17,7 +20,7 @@
     int l = 0;
     int y = 0;
 
-    int line = 1, column = 1, y_line = -1, y_col = -1;
+    int line = 1, column = 1, y_line = -1, y_column = -1;
     int line_comm, column_comm;
 
     char *string = NULL;
@@ -28,7 +31,6 @@
 %X Comment
 
 reserved                        auto|break|case|const|continue|default|do|enum|extern|float|for|goto|inline|long|register|restrict|signed|sizeof|static|struct|switch|typedef|union|unsigned|volatile|_Bool|_Complex|_Imaginary|"++"|"--"|"["|"]"
-words                           char|else|while|if|int|short|double|return|void
 digit                           [0-9]
 decimal                         ([0-9]+"."(([eE][+-]?[0-9]+)|[0-9]+|([0-9]+[eE][+-]?[0-9]+))?)|("."[0-9]+([eE][+-]?[0-9]+)?)|([0-9]+([eE][+-]?[0-9]+))
 identifier                      [a-zA-Z_][0-9a-zA-Z_]*
@@ -67,7 +69,15 @@ semi                            ";"
 
 %%
 {reserved}                      { if (l) printf("RESERVED(%s)\n", yytext); if(y){ PASS_TOKEN(); return RESERVED;} }
-{words}                         { for(int i = 0; i < yyleng; i++) {yytext[i] = toupper(yytext[i]);} if(l) printf("%s\n", yytext); if(y) return yytext;}
+char                            { if (l) printf("CHAR\n"); if(y) return CHAR;}
+else                            { if (l) printf("ELSE\n"); if(y) return ELSE;}
+while                           { if (l) printf("WHILE\n"); if(y) return WHILE;}
+if                              { if (l) printf("IF\n"); if(y) return IF;}
+int                             { if (l) printf("INT\n"); if(y) return INT;}
+short                           { if (l) printf("SHORT\n"); if(y) return SHORT;}
+double                          { if (l) printf("DOUBLE\n"); if(y) return DOUBLE;}
+return                          { if (l) printf("RETURN\n"); if(y) return RETURN;}
+void                            { if (l) printf("VOID\n"); if(y) return VOID;}
 {digit}+                        { if (l) printf("NATURAL(%s)\n", yytext); if(y){ PASS_TOKEN(); return NATURAL;} }
 {decimal}                       { if (l) printf("DECIMAL(%s)\n", yytext); if(y){ PASS_TOKEN(); return DECIMAL;} }
 {identifier}                    { if (l) printf("IDENTIFIER(%s)\n", yytext); if(y){ PASS_TOKEN(); return IDENTIFIER;} }

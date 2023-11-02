@@ -1,6 +1,7 @@
 %{
 
 #include "ast.h"
+#include <stddef.h>
 
 int yylex(void);
 void yyerror(char *);
@@ -135,7 +136,6 @@ Aux_Statement: Statement                                                    {}
              ;
 
 Expr: Expr ASSIGN Expr                                                      {}
-    | Aux_Expr                                                              {}
     | Expr PLUS Expr                                                        {}
     | Expr MINUS Expr                                                       {}
     | Expr MUL Expr                                                         {}
