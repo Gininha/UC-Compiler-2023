@@ -1,5 +1,7 @@
 %{
 
+#include <stddef.h>
+
 #include "ast.h"
 
 int yylex(void);
@@ -74,7 +76,7 @@ FunctionsAndDeclarations: FunctionDefinition                                {
                         ;
 
 FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {
-                                                                                $$ = newnode(FunctionDefinition, NULL);
+                                                                                $$ = newnode(FuncDefinition, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
                                                                                 addchild($$, $3);
@@ -83,7 +85,7 @@ FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {
                   ;
 
 FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {
-                                                                                $$ = newnode(FunctionBody, NULL);
+                                                                                $$ = newnode(FuncBody, NULL);
                                                                                 addchild($$, $2);
                                                                             }
             | LBRACE RBRACE                                                 {}
@@ -100,16 +102,26 @@ DeclarationsAndStatements: DeclarationsAndStatements Statement              {
                                                                             }
                          | Statement                                        {
                                                                                 $$ = newnode(DeclarationsAndStatements, NULL);
+                                                                                addchild($$, $1);
                                                                             }
                          | Declaration                                      {
                                                                                 $$ = newnode(DeclarationsAndStatements, NULL);
+                                                                                addchild($$, $1);
                                                                             }
                          ;
 
-FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {}
+FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {
+                                                                                $$ = newnode(FunctionDeclaration, NULL);
+                                                                                addchild($$, $1);
+                                                                                addchild($$, $2);
+                                                                            }
                    ;
 
-FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {}
+FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
+                                                                                $$ = newnode(FuncDeclarator, NULL);
+                                                                                addchild($$, newnode(Identifier, $1));
+                                                                                addchild($$, $3);
+                                                                            }
                   ;
 
 ParameterList: ParameterDeclaration                                         {}
