@@ -136,3 +136,8 @@ int main(int argc, char * argv[]) {
 int yywrap() {  /* called on EOF, return 1 to terminate */
     return 1;
 }
+
+void yyerror(char *error) {
+    errors++;
+    printf("Found %s '%s' (%d,%d)\n", error, yytext, syn_line, syn_column);
+}
