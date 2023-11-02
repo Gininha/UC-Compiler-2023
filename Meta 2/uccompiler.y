@@ -47,44 +47,64 @@ struct node *program = newnode(Program, NULL);
 
 FunctionsAndDeclarations: FunctionDefinition                                {   
                                                                                 $$ = program;
-                                                                                addchild($$, newnode(FunctionDefinition, NULL)); 
+                                                                                addchild($$, $1); 
                                                                             }
                         | FunctionDeclaration                               {   
                                                                                 $$ = program;
-                                                                                addchild($$, newnode(FunctionDeclaration, NULL)); 
+                                                                                addchild($$, $1); 
                                                                             }
                         | Declaration                                       {   
                                                                                 $$ = program;
-                                                                                addchild($$, newnode(Declaration, NULL)); 
+                                                                                addchild($$, $1); 
                                                                             }
                         | FunctionsAndDeclarations FunctionDefinition       {   
                                                                                 $$ = $1;
-                                                                                addchild($$, newnode(FunctionDefinition, NULL));
+                                                                                addchild($$, $2);
 
                                                                             }
                         | FunctionsAndDeclarations FunctionDeclaration      { 
                                                                                 $$ = $1;    
-                                                                                addchild($$, newnode(FunctionDeclaration, NULL));
+                                                                                addchild($$, $2);
                             
                                                                             }
                         | FunctionsAndDeclarations Declaration              { 
                                                                                 $$ = $1;    
-                                                                                addchild($$, newnode(Declaration, NULL));
+                                                                                addchild($$, $2);
 
                                                                             }
                         ;
 
-FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {}
+FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {
+                                                                                $$ = newnode(FunctionDefinition, NULL);
+                                                                                addchild($$, $1);
+                                                                                addchild($$, $2);
+                                                                                addchild($$, $3);
+
+                                                                            }
                   ;
 
-FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {}
+FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {
+                                                                                $$ = newnode(FunctionBody, NULL);
+                                                                                addchild($$, $2);
+                                                                            }
             | LBRACE RBRACE                                                 {}
             ;
 
-DeclarationsAndStatements: Statement DeclarationsAndStatements              {}
-                         | Declaration DeclarationsAndStatements            {}
-                         | Statement                                        {}
-                         | Declaration                                      {}
+DeclarationsAndStatements: DeclarationsAndStatements Statement              {
+                                                                                $$ = $1;
+                                                                                addchild($$, $2);
+
+                                                                            }
+                         | DeclarationsAndStatements Declaration            {
+                                                                                $$ = $1;
+                                                                                addchild($$, $2);
+                                                                            }
+                         | Statement                                        {
+                                                                                $$ = newnode(DeclarationsAndStatements, NULL);
+                                                                            }
+                         | Declaration                                      {
+                                                                                $$ = newnode(DeclarationsAndStatements, NULL);
+                                                                            }
                          ;
 
 FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {}
