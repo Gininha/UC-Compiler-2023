@@ -122,14 +122,16 @@ void                            { if (l) printf("VOID\n"); if(y) return VOID;}
 
 extern int yylex();
 int main(int argc, char * argv[]) {
+    
     if (argc > 1){
         if (strcmp(argv[1], "-l") == 0)
             l = 1;
         if (strcmp(argv[1], "-t") == 0)
             y = 1;
     }
-
-    yylex();    /* run the lexical analysis automaton */
+    
+    yyparse();
+    show(program, 0);
     return 0;
 }
 

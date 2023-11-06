@@ -21,7 +21,7 @@ struct node *program;
 
 %type<node> FunctionsAndDeclarations FunctionDefinition FunctionBody DeclarationsAndStatements
 %type<node> FunctionDeclaration FunctionDeclarator ParameterList ParameterDeclaration Declaration
-%type<node> TypeSpec Declarator Statement Expr Program
+%type<node> TypeSpec Declarator Statement Expr Program Aux_Declaration StatList Aux_Expr
 
 %union{
     char *token;
@@ -48,7 +48,7 @@ struct node *program;
 %%
 
 Program: FunctionsAndDeclarations                                           {   
-                                                                                $$ = newnode(Program, NULL);
+                                                                                $$ = program = newnode(Program, NULL);
                                                                                 addchild($$, $1); 
                                                                             }
 
@@ -119,84 +119,124 @@ FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {
                    ;
 
 FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
+                                                                                
                                                                                 $$ = newnode(Identifier, $1);
                                                                                 addchild($$, $3);
 
                                                                             }
 
-ParameterList: ParameterDeclaration                                         {}
-             | ParameterList COMMA ParameterDeclaration                     {}
+ParameterList: ParameterDeclaration                                         { 
+                                                                                $$ = newnode(ParamList, NULL);
+                                                                                addchild($$, $1);
+                                                                            }
+             | ParameterList COMMA ParameterDeclaration                     {
+                                                                                $$ = $1;
+                                                                                addchild($$, $3);
+                                                                            }
              ; 
 
-ParameterDeclaration: TypeSpec                                              {}
+ParameterDeclaration: TypeSpec                                              {
+                                                                                $$ = newnode(ParamDeclaration, NULL);
+                                                                                addchild($$, $1);
+                                                                            }
                     | TypeSpec IDENTIFIER                                   {}
                     ;
 
-Declaration: TypeSpec Declarator SEMI                                       {}
-           | TypeSpec Declarator Aux_Declaration SEMI                       {}
-           ;
+Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
+                                                                                $$ = newnode(Declaration, NULL);
+                                                                                addchild($$, $1);
+                                                                                addchild($$, $2);
+                                                                                addchild($$, $3);
+                                                                            }
+           | TypeSpec Declarator SEMI                                       {}
 
-Aux_Declaration: COMMA Declarator                                           {}
-               | Aux_Declaration COMMA Declarator                           {}
+Aux_Declaration: COMMA Declarator                                           {
+                                                                                $$ = $2;
+                                                                            }
+               | Aux_Declaration COMMA Declarator                           {
+                                                                                $$ = $1;
+                                                                                addchild($$, $3);
+                                                                            }
                ;
 
-TypeSpec: CHAR                                                              {}
-        | INT                                                               {}
-        | VOID                                                              {}
-        | SHORT                                                             {}
-        | DOUBLE                                                            {}
+TypeSpec: CHAR                                                              {
+                                                                                $$ = newnode(Char, NULL);
+                                                                            }
+        | INT                                                               {
+                                                                                $$ = newnode(Int, NULL);
+                                                                            }
+        | VOID                                                              {
+                                                                                $$ = newnode(Void, NULL);
+                                                                            }
+        | SHORT                                                             {
+                                                                                $$ = newnode(Short, NULL);
+                                                                            }
+        | DOUBLE                                                            {
+                                                                                $$ = newnode(Double, NULL);
+                                                                            }
         ;
 
-Declarator: IDENTIFIER                                                      {}
-          | IDENTIFIER ASSIGN Expr                                          {}
+Declarator: IDENTIFIER                                                      {
+                                                                                $$ = newnode(Identifier, $1);
+                                                                            }
+          | IDENTIFIER ASSIGN Expr                                          {
+                                                                                $$ = newnode(Identifier, $1);
+                                                                                addchild($$, $3);
+                                                                            }
           ;
 
-Statement: Expr SEMI                                                        {}
+Statement: Expr SEMI                                                        { $$ = $1; }
          | SEMI                                                             {}
          | LBRACE RBRACE                                                    {}
-         | LBRACE Aux_Statement RBRACE                                      {}
-         | IF LPAR Expr RPAR Statement                       %prec LOW      {}      
-         | IF LPAR Expr RPAR Statement ELSE Statement                       {}
-         | WHILE LPAR Expr RPAR Statement                                   {}
-         | RETURN SEMI                                                      {}
-         | RETURN Expr SEMI                                                 {}
+         | LBRACE StatList RBRACE                                           { $$ = $2; }
+         | IF LPAR Expr RPAR Statement                       %prec LOW      { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); }      
+         | IF LPAR Expr RPAR Statement ELSE Statement                       { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, $7); }
+         | WHILE LPAR Expr RPAR Statement                                   { $$ = newnode(While, NULL); addchild($$, $3); addchild($$, $5); }
+         | RETURN SEMI                                                      { $$ = newnode(Return, NULL); }
+         | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); }
          ;
 
-Aux_Statement: Statement                                                    {}
-             | Aux_Statement Statement                                      {}
-             ;
+StatList: Statement                                                         { 
+                                                                                $$ = newnode(StatList, NULL);
+                                                                                addchild($$, $1);
+                                                                            }
+        | StatList Statement                                                {
+                                                                                $$ = $1;
+                                                                                addchild($$, $2);
+                                                                            }
+        ; 
 
-Expr: Expr ASSIGN Expr                                                      {}
-    | Expr PLUS Expr                                                        {}
-    | Expr MINUS Expr                                                       {}
-    | Expr MUL Expr                                                         {}
-    | Expr DIV Expr                                                         {}
-    | Expr MOD Expr                                                         {}
-    | Expr OR Expr                                                          {}
-    | Expr AND Expr                                                         {}
-    | Expr BITWISEAND Expr                                                  {}
-    | Expr BITWISEOR Expr                                                   {}
-    | Expr BITWISEXOR Expr                                                  {}
-    | Expr EQ Expr                                                          {}
-    | Expr NE Expr                                                          {}
-    | Expr LE Expr                                                          {}
-    | Expr GE Expr                                                          {}
-    | Expr LT Expr                                                          {}
-    | Expr GT Expr                                                          {}
-    | PLUS Expr                                                             {}
-    | MINUS Expr                                                            {}
-    | NOT Expr                                                              {}
-    | IDENTIFIER LPAR RPAR                                                  {}
-    | IDENTIFIER LPAR Aux_Expr RPAR                                         {}
-    | IDENTIFIER                                                            {}
-    | NATURAL                                                               {}
-    | CHRLIT                                                                {}
-    | DECIMAL                                                               {}
-    | LPAR Expr RPAR                                                        {}
+Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr PLUS Expr                                                        {$$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr MINUS Expr                                                       {$$ = newnode(Sub, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr MUL Expr                                                         {$$ = newnode(Mul, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr DIV Expr                                                         {$$ = newnode(Div, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr MOD Expr                                                         {$$ = newnode(Mod, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr OR Expr                                                          {$$ = newnode(Or, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr AND Expr                                                         {$$ = newnode(And, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr BITWISEAND Expr                                                  {$$ = newnode(BitWiseAnd, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr BITWISEOR Expr                                                   {$$ = newnode(BitWiseOr, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr BITWISEXOR Expr                                                  {$$ = newnode(BitWiseXor, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr EQ Expr                                                          {$$ = newnode(Eq, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr NE Expr                                                          {$$ = newnode(Ne, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr LE Expr                                                          {$$ = newnode(Le, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr GE Expr                                                          {$$ = newnode(Ge, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr LT Expr                                                          {$$ = newnode(Lt, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr GT Expr                                                          {$$ = newnode(Gt, NULL); addchild($$, $1); addchild($$, $3);}
+    | PLUS Expr                                                             {$$ = newnode(Add, NULL); addchild($$, $2);}
+    | MINUS Expr                                                            {$$ = newnode(Sub, NULL); addchild($$, $2);}
+    | NOT Expr                                                              {$$ = newnode(Not, NULL); addchild($$, $2);}
+    | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, newnode(Null, NULL));}
+    | IDENTIFIER LPAR Aux_Expr RPAR                                         {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, $3);}
+    | IDENTIFIER                                                            {$$ = newnode(Identifier, $1);}
+    | NATURAL                                                               {$$ = newnode(Natural, $1);}
+    | CHRLIT                                                                {$$ = newnode(ChrLit, $1);}
+    | DECIMAL                                                               {$$ = newnode(Decimal, $1);}
+    | LPAR Expr RPAR                                                        {$$ = $2;}
     ;
 
-Aux_Expr: Expr                                                              {}
-        | Aux_Expr COMMA Expr                                               {}
+Aux_Expr: Expr                                                              {$$ = $1;}
+        | Aux_Expr COMMA Expr                                               {$$ = $1; addchild($$, $3);}
         ;
 
 %%

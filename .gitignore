@@ -54,3 +54,7 @@ dkms.conf
 
 # Custom
 lex.yy.c
+testes
+y.gv
+y.output
+uccompiler
