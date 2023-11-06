@@ -57,4 +57,5 @@ lex.yy.c
 testes
 y.gv
 y.output
-uccompiler
+y.tab.h
+y.tab.c
