@@ -7,6 +7,7 @@ struct node {
     enum category category;
     char *token;
     struct node_list *children;
+    struct node_list *brotherhood;
 };
 
 struct node_list {
@@ -16,6 +17,7 @@ struct node_list {
 
 struct node *newnode(enum category category, char *token);
 void addchild(struct node *parent, struct node *child);
+void addbrother(struct node *brother, struct node *new_brother);
 void show(struct node *node, int depth);
 
 #endif

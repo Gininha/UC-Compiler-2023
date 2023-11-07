@@ -24,6 +24,17 @@ void addchild(struct node *parent, struct node *child) {
     children->next = new;
 }
 
+void addbrother(struct node *brother, struct node *new_brother){
+    struct node_list *new = malloc(sizeof(struct node_list));
+    new->node = new_brother;
+    new->next = NULL;
+    
+    while(brother->brotherhood != NULL)
+        brother->brotherhood = brother->brotherhood->next;
+    brother->brotherhood = new;
+}
+
+
 void show(struct node *node, int depth) {
 
     char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
@@ -35,10 +46,19 @@ void show(struct node *node, int depth) {
     if(node->token)
         printf("(%s)", node->token);
     printf("\n");
+
+    struct node_list *brother = node->brotherhood;
+    while(brother){
+        show(brother->node, depth);
+        brother = brother->next;
+    }
+
     struct node_list *aux = node->children->next;
     while(aux){
         show(aux->node, depth+1);
         aux = aux->next;
     }
+
 }
+
 

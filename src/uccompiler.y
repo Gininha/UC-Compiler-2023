@@ -91,7 +91,7 @@ FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {
                                                                                 $$ = newnode(FuncBody, NULL);
                                                                                 addchild($$, $2);
                                                                             }
-            | LBRACE RBRACE                                                 {}
+            | LBRACE RBRACE                                                 { $$ = newnode(FuncBody, NULL); addchild($$, newnode(Null, NULL)); }
             ;
 
 DeclarationsAndStatements: DeclarationsAndStatements Statement              {
@@ -121,7 +121,7 @@ FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {
 FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
                                                                                 
                                                                                 $$ = newnode(Identifier, $1);
-                                                                                addchild($$, $3);
+                                                                                addbrother($$, $3);
 
                                                                             }
 
@@ -139,7 +139,11 @@ ParameterDeclaration: TypeSpec                                              {
                                                                                 $$ = newnode(ParamDeclaration, NULL);
                                                                                 addchild($$, $1);
                                                                             }
-                    | TypeSpec IDENTIFIER                                   {}
+                    | TypeSpec IDENTIFIER                                   {
+                                                                                $$ = newnode(ParamDeclaration, NULL);
+                                                                                addchild($$, $1);
+                                                                                addchild($$, newnode(Identifier, $2));
+                                                                            }
                     ;
 
 Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
@@ -193,7 +197,7 @@ Statement: Expr SEMI                                                        { $$
          | IF LPAR Expr RPAR Statement ELSE Statement                       { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, $7); }
          | WHILE LPAR Expr RPAR Statement                                   { $$ = newnode(While, NULL); addchild($$, $3); addchild($$, $5); }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); }
-         | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); }
+         | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2);}
          ;
 
 StatList: Statement                                                         { 
