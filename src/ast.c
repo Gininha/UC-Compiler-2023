@@ -47,16 +47,16 @@ void show(struct node *node, int depth) {
         printf("(%s)", node->token);
     printf("\n");
 
-    struct node_list *brother = node->brotherhood;
-    while(brother){
-        show(brother->node, depth);
-        brother = brother->next;
-    }
-
     struct node_list *aux = node->children->next;
     while(aux){
         show(aux->node, depth+1);
         aux = aux->next;
+    }
+
+    struct node_list *brother = node->brotherhood;
+    while(brother){
+        show(brother->node, depth);
+        brother = brother->next;
     }
 
 }

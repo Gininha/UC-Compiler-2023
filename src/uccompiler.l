@@ -139,6 +139,6 @@ int yywrap() {  /* called on EOF, return 1 to terminate */
     return 1;
 }
 
-void yyerror(char *error) {
-    printf("Found %s '%s' (%d,%d)\n", error, yytext, y_line, y_column);
+void yyerror (char *error) {
+    printf("Line %d column %d: %s: %s\n" , y_line, y_column, error, yytext);
 }
