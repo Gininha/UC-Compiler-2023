@@ -39,24 +39,27 @@ void show(struct node *node, int depth) {
 
     char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     
-    for(int i=0 ; i <depth; i++){
-        printf("..");
-    }
-    printf("%s", category_array[node->category]);
-    if(node->token)
-        printf("(%s)", node->token);
-    printf("\n");
+    if(node){
+        for(int i=0 ; i <depth; i++){
+            printf("..");
+        }
+        
+            printf("%s", category_array[node->category]);
+            if(node->token)
+                printf("(%s)", node->token);
+            printf("\n");
+        
+        struct node_list *aux = node->children->next;
+        while(aux){
+            show(aux->node, depth+1);
+            aux = aux->next;
+        }
 
-    struct node_list *aux = node->children->next;
-    while(aux){
-        show(aux->node, depth+1);
-        aux = aux->next;
-    }
-
-    struct node_list *brother = node->brotherhood;
-    while(brother){
-        show(brother->node, depth);
-        brother = brother->next;
+        struct node_list *brother = node->brotherhood;
+        while(brother){
+            show(brother->node, depth);
+            brother = brother->next;
+        }
     }
 
 }

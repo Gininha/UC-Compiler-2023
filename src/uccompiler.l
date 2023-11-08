@@ -129,7 +129,7 @@ int main(int argc, char * argv[]) {
         if (strcmp(argv[1], "-t") == 0)
             y = 1;
     }
-    
+    y = 1;
     yyparse();
     show(program, 0);
     return 0;

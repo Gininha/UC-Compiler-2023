@@ -194,11 +194,11 @@ Declarator: IDENTIFIER                                                      {
           ;
 
 Statement: Expr SEMI                                                        { $$ = $1; }
-         | SEMI                                                             { ; }
-         | LBRACE RBRACE                                                    { $$ = newnode(Null, NULL); }
+         | SEMI                                                             { $$ = NULL; }
+         | LBRACE RBRACE                                                    { $$ = NULL; }
          | LBRACE StatList RBRACE                                           { $$ = $2; }
          | IF LPAR Expr RPAR Statement                       %prec LOW      { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, newnode(Null, NULL));}      
-         | IF LPAR Expr RPAR Statement ELSE Statement                       { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, $7); }
+         | IF LPAR Expr RPAR Statement ELSE Statement                       { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, newnode(Null, NULL)); addchild($$, $7); }
          | WHILE LPAR Expr RPAR Statement                                   { $$ = newnode(While, NULL); addchild($$, $3); addchild($$, $5); }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); }
          | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2);}
