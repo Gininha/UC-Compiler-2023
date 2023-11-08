@@ -25,14 +25,24 @@ void addchild(struct node *parent, struct node *child) {
 }
 
 void addbrother(struct node *brother, struct node *new_brother){
-    struct node_list *new = malloc(sizeof(struct node_list));
-    new->node = new_brother;
-    new->next = NULL;
-    
-    while(brother->brotherhood != NULL)
-        brother->brotherhood = brother->brotherhood->next;
-    brother->brotherhood = new;
+    if (brother == NULL) {
+        
+    }else{
+        struct node_list *new = malloc(sizeof(struct node_list));
+        new->node = new_brother;
+        new->next = NULL;
+
+        if (brother->brotherhood == NULL) {
+            brother->brotherhood = new;
+        } else {
+            struct node_list *temp = brother->brotherhood;
+            while(temp->next != NULL)
+                temp = temp->next;
+            temp->next = new;
+        }
+    }
 }
+
 
 
 void show(struct node *node, int depth) {

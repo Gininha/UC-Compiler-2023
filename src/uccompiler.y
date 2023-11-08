@@ -63,17 +63,17 @@ FunctionsAndDeclarations: FunctionDefinition                                {
                                                                             }
                         | FunctionsAndDeclarations FunctionDefinition       {   
                                                                                 $$ = $1;
-                                                                                addchild($$, $2);
+                                                                                addbrother($$, $2);
 
                                                                             }
                         | FunctionsAndDeclarations FunctionDeclaration      { 
                                                                                 $$ = $1;    
-                                                                                addchild($$, $2);
+                                                                                addbrother($$, $2);
                             
                                                                             }
                         | FunctionsAndDeclarations Declaration              { 
                                                                                 $$ = $1;    
-                                                                                addchild($$, $2);
+                                                                                addbrother($$, $2);
 
                                                                             }
                         ;
@@ -90,16 +90,18 @@ FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody {
 FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {   
                                                                                 $$ = $2;
                                                                             }
-            | LBRACE RBRACE                                                 { $$ = newnode(FuncBody, NULL); addchild($$, newnode(Null, NULL)); }
+            | LBRACE RBRACE                                                 { $$ = newnode(FuncBody, NULL); }
             ;
 
 DeclarationsAndStatements: DeclarationsAndStatements Statement              {   
                                                                                 $$ = $1;
-                                                                                addchild($$, $2);
+                                                                                if($2){
+                                                                                    addbrother($$, $2);
+                                                                                }
                                                                             }
                          | DeclarationsAndStatements Declaration            {
                                                                                 $$ = $1;
-                                                                                addchild($$, $2);
+                                                                                addbrother($$, $2);
                                                                             }
                          | Statement                                        {
                                                                                 $$ = newnode(FuncBody, NULL);
@@ -159,11 +161,14 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                             }
 
 Aux_Declaration: COMMA Declarator                                           {
-                                                                                $$ = $2;
+                                                                                $$ = newnode(Declaration, NULL);
+                                                                                addchild($$, $2);
                                                                             }
                | Aux_Declaration COMMA Declarator                           {
                                                                                 $$ = $1;
-                                                                                addchild($$, $3);
+                                                                                struct node* temp = newnode(Declaration, NULL);
+                                                                                addchild(temp, $3);
+                                                                                addbrother($$, temp);
                                                                             }
                ;
 
@@ -197,8 +202,31 @@ Statement: Expr SEMI                                                        { $$
          | SEMI                                                             { $$ = NULL; }
          | LBRACE RBRACE                                                    { $$ = NULL; }
          | LBRACE StatList RBRACE                                           { $$ = $2; }
-         | IF LPAR Expr RPAR Statement                       %prec LOW      { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, newnode(Null, NULL));}      
-         | IF LPAR Expr RPAR Statement ELSE Statement                       { $$ = newnode(If, NULL); addchild($$, $3); addchild($$, $5); addchild($$, newnode(Null, NULL)); addchild($$, $7); }
+         | IF LPAR Expr RPAR Statement                       %prec LOW      { 
+                                                                                $$ = newnode(If, NULL); 
+                                                                                addchild($$, $3);
+                                                                                if($5){ 
+                                                                                    addchild($$, $5);
+                                                                                }else{ 
+                                                                                    addchild($$, newnode(Null, NULL));
+                                                                                }
+                                                                                addchild($$, newnode(Null, NULL));
+                                                                            }      
+         | IF LPAR Expr RPAR Statement ELSE Statement                       { 
+                                                                                $$ = newnode(If, NULL); 
+                                                                                addchild($$, $3);
+                                                                                if($5){ 
+                                                                                    addchild($$, $5);
+                                                                                }else{ 
+                                                                                    addchild($$, newnode(Null, NULL));
+                                                                                }
+                                                                                if($7){
+                                                                                    addchild($$, $7);
+                                                                                }else{ 
+                                                                                    addchild($$, newnode(Null, NULL));
+                                                                                }
+                                                                            }
+
          | WHILE LPAR Expr RPAR Statement                                   { $$ = newnode(While, NULL); addchild($$, $3); addchild($$, $5); }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); }
          | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2);}
