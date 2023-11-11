@@ -8,6 +8,8 @@
 int yylex(void);
 void yyerror(char *);
 
+extern int has_error;
+
 struct node *program;
 
 %}
@@ -21,7 +23,7 @@ struct node *program;
 
 %type<node> FunctionsAndDeclarations FunctionDefinition FunctionBody DeclarationsAndStatements
 %type<node> FunctionDeclaration FunctionDeclarator ParameterList ParameterDeclaration Declaration
-%type<node> TypeSpec Declarator Statement Expr Program Aux_Declaration StatList Aux_Expr StatList_aux
+%type<node> TypeSpec Declarator Statement Expr Program Aux_Declaration Aux_Expr StatementOrError recursionS
 
 %union{
     char *token;
@@ -183,6 +185,8 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
                                                                             }
+           | error SEMI                                                     {$$ = newnode(Null, NULL); has_error = 1;}
+           ;
 
 Aux_Declaration: COMMA Declarator                                           {
                                                                                 $$ = newnode(Declaration, NULL);
@@ -225,8 +229,8 @@ Declarator: IDENTIFIER                                                      {
 Statement: Expr SEMI                                                        { $$ = $1; }
          | SEMI                                                             { $$ = NULL; }
          | LBRACE RBRACE                                                    { $$ = NULL; }
-         | LBRACE StatList RBRACE                                           { $$ = $2; }
-         | IF LPAR Expr RPAR Statement                       %prec LOW      { 
+         | LBRACE recursionS RBRACE                                         { if($2 && $2->brotherhood){$$=newnode(StatList, NULL); addchild($$, $2); }else{$$ = $2;} }
+         | IF LPAR Expr RPAR StatementOrError                %prec LOW      { 
                                                                                 $$ = newnode(If, NULL); 
                                                                                 addchild($$, $3);
                                                                                 if($5){ 
@@ -236,7 +240,7 @@ Statement: Expr SEMI                                                        { $$
                                                                                 }
                                                                                 addchild($$, newnode(Null, NULL));
                                                                             }      
-         | IF LPAR Expr RPAR Statement ELSE Statement                       { 
+         | IF LPAR Expr RPAR StatementOrError ELSE StatementOrError                       { 
                                                                                 $$ = newnode(If, NULL); 
                                                                                 addchild($$, $3);
                                                                                 if($5){ 
@@ -251,7 +255,7 @@ Statement: Expr SEMI                                                        { $$
                                                                                 }
                                                                             }
 
-         | WHILE LPAR Expr RPAR Statement                                   {   
+         | WHILE LPAR Expr RPAR StatementOrError                                   {   
                                                                                 $$ = newnode(While, NULL); 
                                                                                 addchild($$, $3); 
                                                                                 if($5){
@@ -262,31 +266,22 @@ Statement: Expr SEMI                                                        { $$
                                                                             }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); addchild($$, newnode(Null, NULL)); }
          | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2);}
+         | LBRACE error RBRACE                                              {$$ = newnode(Null, NULL); has_error = 1;}
          ;
 
-StatList: Statement                                                         { 
-                                                                                $$ = $1;
-                                                                            }
-        | StatList_aux Statement                                            {
-                                                                                $$ = newnode(StatList, NULL);
-                                                                                addchild($$, $1);
-                                                                                addchild($$, $2);
-                                                                            }
-        ;
 
-StatList_aux:Statement                                                      { 
-                                                                                $$ = $1;
-                                                                            }
-            | StatList_aux Statement                                        {
-                                                                                $$ = $1;
-                                                                                addbrother($$, $2);
-                                                                            }
-            ;
+StatementOrError: Statement                                                 {$$=$1;}
+                | error SEMI                                                {$$ = newnode(Null, NULL); has_error = 1;}
+                ;
+
+recursionS: StatementOrError                                                {$$=$1;}
+          | recursionS StatementOrError                                     {if($1){$$=$1; addbrother($$,$2);} else{$$=$2;}}
+          ;
 
 Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr COMMA Expr                                                       {$$ = newnode(Comma, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr PLUS Expr                                                        {$$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3);}
-    | Expr MINUS Expr                                                       {$$ = newnode(Minus, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr MINUS Expr                                                       {$$ = newnode(Sub, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr MUL Expr                                                         {$$ = newnode(Mul, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr DIV Expr                                                         {$$ = newnode(Div, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr MOD Expr                                                         {$$ = newnode(Mod, NULL); addchild($$, $1); addchild($$, $3);}
@@ -301,7 +296,7 @@ Expr: Expr ASSIGN Expr                                                      {$$ 
     | Expr GE Expr                                                          {$$ = newnode(Ge, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr LT Expr                                                          {$$ = newnode(Lt, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr GT Expr                                                          {$$ = newnode(Gt, NULL); addchild($$, $1); addchild($$, $3);}
-    | PLUS Expr        %prec NOT                                            {$$ = newnode(Add, NULL); addchild($$, $2);}
+    | PLUS Expr        %prec NOT                                            {$$ = newnode(Plus, NULL); addchild($$, $2);}
     | MINUS Expr       %prec NOT                                            {$$ = newnode(Minus, NULL); addchild($$, $2);}
     | NOT Expr                                                              {$$ = newnode(Not, NULL); addchild($$, $2);}
     | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, newnode(Null, NULL));}
@@ -311,6 +306,8 @@ Expr: Expr ASSIGN Expr                                                      {$$ 
     | CHRLIT                                                                {$$ = newnode(ChrLit, $1);}
     | DECIMAL                                                               {$$ = newnode(Decimal, $1);}
     | LPAR Expr RPAR                                                        {$$ = $2;}
+    | IDENTIFIER LPAR error RPAR                                            {$$ = newnode(Null, NULL); has_error = 1;}
+    | LPAR error RPAR                                                       {$$ = newnode(Null, NULL); has_error = 1;}
     ;
 
 Aux_Expr: Expr                         %prec LOWER                          {$$ = $1;}

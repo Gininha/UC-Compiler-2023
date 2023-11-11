@@ -22,6 +22,7 @@
 
     int line = 1, column = 1, y_line = -1, y_column = -1;
     int line_comm, column_comm;
+    int has_error = 0;
 
     char *string = NULL;
 
@@ -131,7 +132,9 @@ int main(int argc, char * argv[]) {
     }
     y = 1;
     yyparse();
-    show(program, 0);
+    if(!has_error){
+        show(program, 0);
+    }
     return 0;
 }
 
@@ -140,5 +143,5 @@ int yywrap() {  /* called on EOF, return 1 to terminate */
 }
 
 void yyerror (char *error) {
-    printf("Line %d column %d: %s: %s\n" , y_line, y_column, error, yytext);
+    printf("Line %d, column %d: %s: %s\n" , y_line, y_column, error, yytext);
 }

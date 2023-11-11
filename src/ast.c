@@ -25,13 +25,11 @@ void addchild(struct node *parent, struct node *child) {
 }
 
 void addbrother(struct node *brother, struct node *new_brother){
-    if (brother == NULL) {
-        
-    }else{
+    if (brother != NULL) {
         struct node_list *new = malloc(sizeof(struct node_list));
         new->node = new_brother;
         new->next = NULL;
-
+        
         if (brother->brotherhood == NULL) {
             brother->brotherhood = new;
         } else {
@@ -42,8 +40,6 @@ void addbrother(struct node *brother, struct node *new_brother){
         }
     }
 }
-
-
 
 void show(struct node *node, int depth) {
 
