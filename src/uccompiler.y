@@ -31,6 +31,7 @@ struct node *program;
 %left LOW
 %left COMMA
 %right ASSIGN
+%right ELSE
 %left OR
 %left AND
 %left BITWISEOR
@@ -43,7 +44,8 @@ struct node *program;
 %right NOT
 %left LPAR RPAR 
 
-%nonassoc ELSE
+%nonassoc LOWER
+%nonassoc HIGHER
 
 %%
 
@@ -252,6 +254,7 @@ StatList_aux:Statement                                                      {
             ;
 
 Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr COMMA Expr                                                       {$$ = newnode(Comma, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr PLUS Expr                                                        {$$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr MINUS Expr                                                       {$$ = newnode(Minus, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr MUL Expr                                                         {$$ = newnode(Mul, NULL); addchild($$, $1); addchild($$, $3);}
@@ -280,8 +283,8 @@ Expr: Expr ASSIGN Expr                                                      {$$ 
     | LPAR Expr RPAR                                                        {$$ = $2;}
     ;
 
-Aux_Expr: Expr                                                              {$$ = $1;}
-        | Aux_Expr COMMA Expr                                               {$$ = $1; addchild($$, $3);}
+Aux_Expr: Expr                         %prec LOWER                          {$$ = $1;}
+        | Aux_Expr COMMA Expr          %prec HIGHER                         {$$ = $1; addbrother($$, $3);}
         ;
 
 %%
