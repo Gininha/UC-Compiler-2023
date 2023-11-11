@@ -96,12 +96,12 @@ FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       {
 DeclarationsAndStatements: DeclarationsAndStatements Statement              {   
                                                                                 $$ = $1;
                                                                                 if($2){
-                                                                                    addbrother($$, $2);
+                                                                                    addchild($$, $2);
                                                                                 }
                                                                             }
                          | DeclarationsAndStatements Declaration            {
                                                                                 $$ = $1;
-                                                                                addbrother($$, $2);
+                                                                                addchild($$, $2);
                                                                             }
                          | Statement                                        {
                                                                                 $$ = newnode(FuncBody, NULL);
