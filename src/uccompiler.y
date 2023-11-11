@@ -229,8 +229,16 @@ Statement: Expr SEMI                                                        { $$
                                                                                 }
                                                                             }
 
-         | WHILE LPAR Expr RPAR Statement                                   { $$ = newnode(While, NULL); addchild($$, $3); addchild($$, $5); }
-         | RETURN SEMI                                                      { $$ = newnode(Return, NULL); }
+         | WHILE LPAR Expr RPAR Statement                                   {   
+                                                                                $$ = newnode(While, NULL); 
+                                                                                addchild($$, $3); 
+                                                                                if($5){
+                                                                                    addchild($$, $5);
+                                                                                }else{
+                                                                                    addchild($$, newnode(Null, NULL));
+                                                                                } 
+                                                                            }
+         | RETURN SEMI                                                      { $$ = newnode(Return, NULL); addchild($$, newnode(Null, NULL)); }
          | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2);}
          ;
 
