@@ -154,7 +154,29 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 $$ = newnode(Declaration, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
-                                                                                addchild($$, $3);
+                                                                                addbrother($$, $3);
+                                                                                struct node_list* aux = $3->brotherhood;
+                                                                                struct node_list* aux_children = $3->children;
+                                                                                
+                                                                                $3->children = malloc(sizeof(struct node_list));
+                                                                                addchild($3, $1);
+                                                                                while(aux_children != NULL){
+                                                                                    addchild($3, aux_children->node);
+                                                                                    aux_children = aux_children->next;
+                                                                                }
+
+                                                                                while(aux != NULL){
+                                                                                    aux_children = aux->node->children;
+                                                                                    aux->node->children = malloc(sizeof(struct node_list));
+                                                                                    addchild(aux->node, $1);
+
+                                                                                    while(aux_children != NULL){
+                                                                                        addchild(aux->node, aux_children->node);
+                                                                                        aux_children = aux_children->next;
+                                                                                    }
+
+                                                                                    aux = aux->next;
+                                                                                }  
                                                                             }
            | TypeSpec Declarator SEMI                                       {
                                                                                 $$ = newnode(Declaration, NULL);
