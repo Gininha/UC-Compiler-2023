@@ -1,3 +1,7 @@
+/*
+2020217743 Gustavo Samuel de Alves e Bastos de André e Lima
+2021199102 Luis Miguel Gonçalves Leite
+*/
 %{
 
 #include <stddef.h>
