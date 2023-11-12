@@ -299,7 +299,7 @@ Expr: Expr ASSIGN Expr                                                      {$$ 
     | PLUS Expr        %prec NOT                                            {$$ = newnode(Plus, NULL); addchild($$, $2);}
     | MINUS Expr       %prec NOT                                            {$$ = newnode(Minus, NULL); addchild($$, $2);}
     | NOT Expr                                                              {$$ = newnode(Not, NULL); addchild($$, $2);}
-    | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, newnode(Null, NULL));}
+    | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1));}
     | IDENTIFIER LPAR Aux_Expr RPAR                                         {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, $3);}
     | IDENTIFIER                                                            {$$ = newnode(Identifier, $1);}
     | NATURAL                                                               {$$ = newnode(Natural, $1);}
