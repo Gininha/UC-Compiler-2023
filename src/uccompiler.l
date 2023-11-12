@@ -158,6 +158,8 @@ int main(int argc, char * argv[]) {
         }
     }
 
+    Remove_tree(program);
+
     return 0;
 }
 

@@ -19,5 +19,6 @@ struct node *newnode(enum category category, char *token);
 void addchild(struct node *parent, struct node *child);
 void addbrother(struct node *brother, struct node *new_brother);
 void show(struct node *node, int depth);
+void Remove_tree(struct node *node);
 
 #endif

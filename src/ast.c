@@ -70,4 +70,27 @@ void show(struct node *node, int depth) {
 
 }
 
+void Remove_tree(struct node *node) {
+    
+    if(node){
+        
+        struct node_list *child = node->children->next;
+        while(child != NULL) {
+            Remove_tree(child->node);
+            struct node_list *tmp = child;
+            child = child->next;
+            free(tmp);
+        }
+
+        struct node_list *brothers = node->brotherhood;
+        while(brothers != NULL) {
+            Remove_tree(brothers->node);
+            struct node_list *tmp = brothers;
+            brothers = brothers->next;
+            free(tmp);
+        }
+    }
+}
+
+
 
