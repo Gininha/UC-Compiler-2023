@@ -160,6 +160,8 @@ int main(int argc, char * argv[]) {
 
     Remove_tree(program);
 
+    yylex_destroy();
+
     return 0;
 }
 
