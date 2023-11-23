@@ -11,12 +11,12 @@ cenas (a funcionar)
 ./uccompiler -t < meta2/more_stmt_errors.uc | diff meta2/more_stmt_errors.out -
 ./uccompiler -t < meta2/multiple_tests.uc | diff meta2/multiple_tests.out -
 ./uccompiler -t < meta2/rb_declarations_01.uc | diff meta2/rb_declarations_01.out -
-./uccompiler -t < meta2/rb_expressions_01.uc | diff meta2/rb_expressions_01.out -
+./uccompiler -t < meta2/rb_expressions_01.uc | diff meta2/rb_expressions_01.out -                                       
 ./uccompiler -t < meta2/ReturnComma.uc | diff meta2/ReturnComma.out -
 ./uccompiler -t < meta2/sierpinski.c | diff meta2/sierpinski.out -
-./uccompiler -t < meta2/statements_and_lexical_errors.uc | diff meta2/statements_and_lexical_errors.out -
-./uccompiler -t < meta2/statements_test.uc | diff meta2/statements_test.out -
-./uccompiler -t < meta2/statements.uc | diff meta2/statements.out -
+./uccompiler -t < meta2/statements_and_lexical_errors.uc | diff meta2/statements_and_lexical_errors.out -               
+./uccompiler -t < meta2/statements_test.uc | diff meta2/statements_test.out -                                           
+./uccompiler -t < meta2/statements.uc | diff meta2/statements.out -                                                     
 ./uccompiler -t < meta2/factorials.uc | diff meta2/factorials.out -                     
 ./uccompiler -t < meta2/miscellaneous_test.uc | diff meta2/miscellaneous_test.out -        
 

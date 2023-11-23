@@ -7,6 +7,7 @@ struct node {
     enum category category;
     char *token;
     struct node_list *children;
+    struct node *parent;
     struct node_list *brotherhood;
 };
 
@@ -16,6 +17,8 @@ struct node_list {
 };
 
 struct node *newnode(enum category category, char *token);
+void set_father(struct node* father, struct node* child);
+void print_d3(struct node *node);
 void addchild(struct node *parent, struct node *child);
 void addbrother(struct node *brother, struct node *new_brother);
 void show(struct node *node, int depth);
