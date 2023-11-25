@@ -11,9 +11,7 @@ struct node *newnode(enum category category, char *token) {
     new->token = token;
     new->children = malloc(sizeof(struct node_list));
     new->children->node = NULL;
-    new->children->next = NULL;
-    new->parent = malloc(sizeof(struct node_list));
-    new->parent = NULL;
+    new->children->next = NULL;    
     return new;
 }
 
@@ -36,6 +34,13 @@ void addchild(struct node *parent, struct node *child) {
         while (brothers != NULL) {
             addchild(parent, brothers->node);
             brothers = brothers->next;
+        }
+
+        struct node_list *brothers2 = child->brotherhood;
+        while (brothers2 != NULL) {
+            struct node_list *aux = brothers2;
+            brothers2 = brothers2->next;
+            free(aux);
         }
 
         child->brotherhood = NULL;
@@ -120,11 +125,24 @@ void show(struct node *node, int depth) {
 
 }
 
+void Remove_conns(struct node_list *children){
+       
+    struct node_list *child = children;
+    //free(node->children);
+    while(child != NULL) {
+        struct node_list *temp = child;
+        child = child->next;
+        free(temp);
+    }
+
+}
+
 void Remove_tree(struct node *node) {
     
     if(node){
         
         struct node_list *child = node->children->next;
+        free(node->children);
         while(child != NULL) {
             Remove_tree(child->node);
             struct node_list *tmp = child;
@@ -134,6 +152,12 @@ void Remove_tree(struct node *node) {
         
         if(node->token)
             free(node->token);
+        
+        while(node->brotherhood!= NULL){
+            struct node_list *aux = node->brotherhood;
+            node->brotherhood = node->brotherhood->next;
+            free(aux);
+        }
 
         free(node);
     }

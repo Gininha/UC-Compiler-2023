@@ -23,5 +23,6 @@ void addchild(struct node *parent, struct node *child);
 void addbrother(struct node *brother, struct node *new_brother);
 void show(struct node *node, int depth);
 void Remove_tree(struct node *node);
+void Remove_conns(struct node_list *children);
 
 #endif

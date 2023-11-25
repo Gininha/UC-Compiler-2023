@@ -1,6 +1,6 @@
-Neste ficheiro estao os testes q foram testados
+# Neste ficheiro estao os testes q foram testados
 
-cenas (a funcionar)
+# cenas (a funcionar)
 
 ./uccompiler -t < meta2/first.c | diff meta2/first.out -
 ./uccompiler -t < meta2/test_statementsAST.uc | diff meta2/test_statementsAST.out -
@@ -21,7 +21,7 @@ cenas (a funcionar)
 ./uccompiler -t < meta2/miscellaneous_test.uc | diff meta2/miscellaneous_test.out -        
 
 
-erros (a funcionar)
+# erros (a funcionar)
 
 ./uccompiler -t < meta2/DecDefErrors.uc | diff meta2/DecDefErrors.out -
 ./uccompiler -t < meta2/declarations.uc | diff meta2/declarations.out -
@@ -37,6 +37,6 @@ erros (a funcionar)
 ./uccompiler -t < meta2/zerobytes.uc | diff meta2/zerobytes.out -                           
 
 
-resto (a nao funcionar)
+# resto (a nao funcionar)
 
-All Working !!!
+# All Working !!!

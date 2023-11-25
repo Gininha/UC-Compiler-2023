@@ -160,13 +160,13 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 $$ = newnode(Declaration, NULL);
                                                                                 
                                                                                 addchild($$, $1);
-                                                                                addchild($$, $2);
-                                                                            
+                                                                                addchild($$, $2);                                                                            
                                                                                 addbrother($$, $3);
                                                                                 
 
                                                                                 struct node_list* aux = $3->brotherhood;
                                                                                 struct node_list* aux_children = $3->children;
+                                                                                struct node_list* antigo_child = aux_children;
 
                                                                                 $3->children = malloc(sizeof(struct node_list));
                                                                                 addchild($3, newnode($1->category, $1->token));
@@ -175,8 +175,11 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                     addchild($3, aux_children->node);
                                                                                 }
 
+                                                                                Remove_conns(antigo_child);
+
                                                                                 while(aux != NULL){
                                                                                     aux_children = aux->node->children;
+                                                                                    antigo_child = aux_children;
                                                                                     aux->node->children = malloc(sizeof(struct node_list));
                                                                                     addchild(aux->node, newnode($1->category, $1->token));
 
@@ -184,9 +187,10 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                         
                                                                                         addchild(aux->node, aux_children->node);
                                                                                     }
-
+                                                                                    
+                                                                                    Remove_conns(antigo_child);
                                                                                     aux = aux->next;
-                                                                                }
+                                                                                }  
                                                                             }
            | TypeSpec Declarator SEMI                                       {
                                                                                 $$ = newnode(Declaration, NULL);
