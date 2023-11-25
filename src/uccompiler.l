@@ -120,7 +120,7 @@ void                            { if (l) printf("VOID\n"); if(y) return VOID;}
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column - yyleng); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column - yyleng, yytext); }
 <<EOF>>                         { y_column = column; y_line = line; return 0; }
-.                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column - yyleng, yytext); has_error = 1;}
+.                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column - yyleng, yytext);}
 %%
 
 extern int yylex();
@@ -157,7 +157,7 @@ int main(int argc, char * argv[]) {
             show(program, 0);
         }
     }
-
+    
     Remove_tree(program);
 
     yylex_destroy();
