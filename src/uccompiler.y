@@ -158,29 +158,37 @@ ParameterDeclaration: TypeSpec                                              {
 
 Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 $$ = newnode(Declaration, NULL);
+                                                                                
                                                                                 addchild($$, $1);
-                                                                                addchild($$, $2);
+                                                                                addchild($$, $2);                                                                            
                                                                                 addbrother($$, $3);
+                                                                                
+
                                                                                 struct node_list* aux = $3->brotherhood;
                                                                                 struct node_list* aux_children = $3->children;
-                                                                                
+                                                                                struct node_list* antigo_child = aux_children;
+
                                                                                 $3->children = malloc(sizeof(struct node_list));
-                                                                                addchild($3, $1);
-                                                                                while(aux_children != NULL){
+                                                                                addchild($3, newnode($1->category, $1->token));
+                                                                                while((aux_children = aux_children->next) != NULL){
+                                                                                    
                                                                                     addchild($3, aux_children->node);
-                                                                                    aux_children = aux_children->next;
                                                                                 }
+
+                                                                                Remove_conns(antigo_child);
 
                                                                                 while(aux != NULL){
                                                                                     aux_children = aux->node->children;
+                                                                                    antigo_child = aux_children;
                                                                                     aux->node->children = malloc(sizeof(struct node_list));
-                                                                                    addchild(aux->node, $1);
+                                                                                    addchild(aux->node, newnode($1->category, $1->token));
 
-                                                                                    while(aux_children != NULL){
+                                                                                    while((aux_children = aux_children->next) != NULL){
+                                                                                        
                                                                                         addchild(aux->node, aux_children->node);
-                                                                                        aux_children = aux_children->next;
                                                                                     }
-
+                                                                                    
+                                                                                    Remove_conns(antigo_child);
                                                                                     aux = aux->next;
                                                                                 }  
                                                                             }
@@ -195,12 +203,14 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
 Aux_Declaration: COMMA Declarator                                           {
                                                                                 $$ = newnode(Declaration, NULL);
                                                                                 addchild($$, $2);
+                                                                                
                                                                             }
                | Aux_Declaration COMMA Declarator                           {
                                                                                 $$ = $1;
                                                                                 struct node* temp = newnode(Declaration, NULL);
                                                                                 addchild(temp, $3);
                                                                                 addbrother($$, temp);
+                                                                                
                                                                             }
                ;
 
@@ -223,10 +233,13 @@ TypeSpec: CHAR                                                              {
 
 Declarator: IDENTIFIER                                                      {
                                                                                 $$ = newnode(Identifier, $1);
+
                                                                             }
           | IDENTIFIER ASSIGN Expr                                          {
                                                                                 $$ = newnode(Identifier, $1);
+                                                                                
                                                                                 addbrother($$, $3);
+                                                                                
                                                                             }
           ;
 
