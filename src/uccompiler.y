@@ -169,7 +169,7 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 struct node_list* aux_children = $3->children;
 
                                                                                 $3->children = malloc(sizeof(struct node_list));
-                                                                                addchild($3, $1);
+                                                                                addchild($3, newnode($1->category, $1->token));
                                                                                 while((aux_children = aux_children->next) != NULL){
                                                                                     
                                                                                     addchild($3, aux_children->node);
@@ -178,7 +178,7 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 while(aux != NULL){
                                                                                     aux_children = aux->node->children;
                                                                                     aux->node->children = malloc(sizeof(struct node_list));
-                                                                                    addchild(aux->node, $1);
+                                                                                    addchild(aux->node, newnode($1->category, $1->token));
 
                                                                                     while((aux_children = aux_children->next) != NULL){
                                                                                         

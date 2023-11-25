@@ -134,7 +134,8 @@ void Remove_tree(struct node *node) {
         
         if(node->token)
             free(node->token);
-        node = NULL;
+
+        free(node);
     }
 }
 
