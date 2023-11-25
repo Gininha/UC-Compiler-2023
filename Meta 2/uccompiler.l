@@ -6,6 +6,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
+    #include <stdbool.h>
     
     #include "y.tab.h"
     #include "ast.h"
@@ -22,6 +23,8 @@
 
     int line = 1, column = 1, y_line = -1, y_column = -1;
     int line_comm, column_comm;
+    int has_error = 0;
+    bool print_tree;
 
     char *string = NULL;
 
@@ -116,22 +119,49 @@ void                            { if (l) printf("VOID\n"); if(y) return VOID;}
 '{charlit}'                     { if (l) printf("CHRLIT(%s)\n",yytext); if(y){ PASS_TOKEN() return CHRLIT;} }
 {error_chrlit}                  { printf("Line %d, column %d: unterminated char constant\n", line, column - yyleng); ADDLINE }
 {invalid_chrlit}                { printf("Line %d, column %d: invalid char constant (%s)\n", line, column - yyleng, yytext); }
-<<EOF>>                         { return 0; }
-.                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column - yyleng, yytext); }
+<<EOF>>                         { y_column = column; y_line = line; return 0; }
+.                               { printf("Line %d, column %d: unrecognized character (%s)\n",line, column - yyleng, yytext);}
 %%
 
 extern int yylex();
 int main(int argc, char * argv[]) {
     
-    if (argc > 1){
-        if (strcmp(argv[1], "-l") == 0)
-            l = 1;
-        if (strcmp(argv[1], "-t") == 0)
+    switch(argc){
+        case 1:
+            l = 0;
             y = 1;
+            print_tree = false;
+            yyparse();
+            break;
+        
+        case 2:
+            if (strcmp(argv[1], "-l") == 0){
+                l = 1;
+                y = 0;
+                print_tree = false;
+
+                yylex();
+            }
+            if (strcmp(argv[1], "-t") == 0){
+                l = 0;
+                y = 1;
+                print_tree = true;
+
+                yyparse();
+            }
+            break;
+    }
+
+    if(print_tree){
+        if(!has_error){
+            show(program, 0);
+        }
     }
     
-    yyparse();
-    show(program, 0);
+    Remove_tree(program);
+
+    yylex_destroy();
+
     return 0;
 }
 
@@ -139,6 +169,6 @@ int yywrap() {  /* called on EOF, return 1 to terminate */
     return 1;
 }
 
-void yyerror(char *error) {
-    printf("Found %s '%s' (%d,%d)\n", error, yytext, y_line, y_column);
+void yyerror (char *error) {
+    printf("Line %d, column %d: %s: %s\n" , y_line, y_column, error, yytext);
 }
