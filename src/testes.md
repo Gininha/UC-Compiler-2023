@@ -1,5 +1,11 @@
 # Neste ficheiro estao os testes q foram testados
 
+
+
+###### --------------------------------------------------------------------------------------------------
+
+### Meta 2
+
 # cenas (a funcionar)
 
 ./uccompiler -t < meta2/first.c | diff meta2/first.out -
@@ -40,3 +46,15 @@
 # resto (a nao funcionar)
 
 # All Working !!!
+
+###### --------------------------------------------------------------------------------------------------
+
+### Meta 3
+
+# A funcionar
+
+./uccompiler -s < meta3/start_here.uc | diff meta3/start_here.out -
+
+# A nao funcionar
+
+quase tudo

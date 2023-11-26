@@ -98,6 +98,23 @@ struct symbol_list * add_to_list_of_tables(struct list_symbol_list * lista, stru
     return new_table;
 }
 
+void add_to_params_list(struct symbol_list *func, enum type type){
+    struct param_list *aux = func->params_list;
+    if (aux) {
+        while (aux->next != NULL) {
+            aux = aux->next;
+        }
+            aux->next = (struct param_list *)malloc(sizeof(struct param_list));
+            aux = aux->next;
+            aux->type = type;
+            aux->next = NULL;
+        } else {
+            func->params_list = (struct param_list *)malloc(sizeof(struct param_list));
+            func->params_list->type = type;
+            func->params_list->next = NULL;
+        }
+}
+
 void check_ParamList(struct node* ParamList, struct symbol_list *table, struct symbol_list *func){
     
     struct node_list *children = ParamList->children;
@@ -108,39 +125,13 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
         if((id = getchild(children->node, 1)) != NULL){
             if(search_symbol(table, id->token) == NULL) {
                 insert_symbol(table, id->token, type, id, 1);
-                struct param_list *aux = func->params_list;
-                if (aux) {
-                    while (aux->next != NULL) {
-                        aux = aux->next;
-                    }
-                    aux->next = (struct param_list *)malloc(sizeof(struct param_list));
-                    aux = aux->next;
-                    aux->type = type;
-                    aux->next = NULL;
-                } else {
-                    func->params_list = (struct param_list *)malloc(sizeof(struct param_list));
-                    func->params_list->type = type;
-                    func->params_list->next = NULL;
-                }
+                add_to_params_list(func, type);
             } else {
                 //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
                 //has_error = 1;
             }
         }else{
-            struct param_list *aux = func->params_list;
-            if (aux) {
-                while (aux->next != NULL) {
-                    aux = aux->next;
-                }
-                aux->next = (struct param_list *)malloc(sizeof(struct param_list));
-                aux = aux->next;
-                aux->type = type;
-                aux->next = NULL;
-            } else {
-                func->params_list = (struct param_list *)malloc(sizeof(struct param_list));
-                func->params_list->type = type;
-                func->params_list->next = NULL;
-            }
+            add_to_params_list(func, type);
         }
     }
 
@@ -153,7 +144,7 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table){
     while((children = children->next) != NULL){
         switch(children->node->category){
             case Declaration:
-                check_declaration(getchild(funcbody, 0), table);
+                check_declaration(children->node, table);
                 break;
             case Return:
                 //printf("Statement\n");
@@ -217,7 +208,9 @@ void check_program(struct node *program) {
     lista->next = NULL;
 
     insert_symbol(symbol_table, "putchar", category_type(Int), newnode(FuncDeclaration, NULL), 0);
+    add_to_params_list(search_symbol(symbol_table, "putchar"), category_type(Int));
     insert_symbol(symbol_table, "getchar", category_type(Int), newnode(FuncDeclaration, NULL), 0);
+    add_to_params_list(search_symbol(symbol_table, "getchar"), category_type(Void));
 
     struct symbol_list *new_table;
     struct node_list *child = program->children;
