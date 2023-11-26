@@ -102,10 +102,19 @@ void addbrother(struct node *brother, struct node *new_brother){
     }
 }
 
+struct node *getchild(struct node *parent, int position) {
+    struct node_list *children = parent->children;
+    while((children = children->next) != NULL)
+        if(position-- == 0)
+            return children->node;
+    return NULL;
+}
+
 void show(struct node *node, int depth) {
 
     char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
-    
+    //char* type_array[4] = {"int", "double", "char", "no_type"};
+
     if(node){
         for(int i=0 ; i <depth; i++){
             printf("..");

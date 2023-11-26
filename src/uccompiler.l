@@ -6,10 +6,10 @@
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
-    #include <stdbool.h>
     
     #include "y.tab.h"
     #include "ast.h"
+    #include "semantics.h"
 
     #define YY_USER_ACTION {y_line = line; y_column = column; column += yyleng;}
     #define ADDLINE line++; column = 1;
@@ -20,6 +20,7 @@
 
     int l = 0;
     int y = 0;
+    int s = 0;
 
     int line = 1, column = 1, y_line = -1, y_column = -1;
     int line_comm, column_comm;
@@ -130,6 +131,7 @@ int main(int argc, char * argv[]) {
         case 1:
             l = 0;
             y = 1;
+            s = 1;
             print_tree = false;
             yyparse();
             break;
@@ -138,6 +140,7 @@ int main(int argc, char * argv[]) {
             if (strcmp(argv[1], "-l") == 0){
                 l = 1;
                 y = 0;
+                s = 0;
                 print_tree = false;
 
                 yylex();
@@ -145,11 +148,24 @@ int main(int argc, char * argv[]) {
             if (strcmp(argv[1], "-t") == 0){
                 l = 0;
                 y = 1;
+                s = 0;
+                print_tree = true;
+
+                yyparse();
+            }
+            if (strcmp(argv[1], "-s") == 0){
+                l = 0;
+                y = 1;
+                s = 1;
                 print_tree = true;
 
                 yyparse();
             }
             break;
+    }
+
+    if(s && !has_error){
+        check_program(program);
     }
 
     if(print_tree){
