@@ -4,7 +4,7 @@
 #include "ast.h"
 #include "semantics.h"
 
-extern int has_error;
+//extern int has_error;
 
 struct symbol_list *symbol_table;
 /*
@@ -124,7 +124,7 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
                 }
             } else {
                 //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-                has_error = 1;
+                //has_error = 1;
             }
         }else{
             struct param_list *aux = func->params_list;
@@ -172,7 +172,7 @@ void check_function(struct node *function, struct symbol_list *table) {
         insert_symbol(symbol_table, getchild(function, 1)->token, category_type(getchild(function, 0)->category), function, 0);
     } else {
         //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-        has_error = 1;
+        //has_error = 1;
     }
 
     insert_symbol(table, "return", category_type(getchild(function, 0)->category), getchild(function, 1), 0);
@@ -188,7 +188,7 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
         insert_symbol(table, id->token, type, id, 0);
     } else {
         //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-        has_error = 1;
+        //has_error = 1;
     }
 
 
@@ -202,7 +202,7 @@ void check_funcdeclatarion(struct node *func_dec, struct symbol_list *table){
         insert_symbol(symbol_table, id->token, type, id, 0);
     } else {
         //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-        has_error = 1;
+        //has_error = 1;
     }
 }
 
