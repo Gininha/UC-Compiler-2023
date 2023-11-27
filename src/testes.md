@@ -55,6 +55,8 @@
 
 ./uccompiler -s < meta3/start_here.uc | diff meta3/start_here.out -
 
+./uccompiler -s < meta3/symboltables.uc | diff meta3/symboltables.out -
+
 # A nao funcionar
 
 quase tudo

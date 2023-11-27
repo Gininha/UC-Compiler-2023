@@ -123,6 +123,20 @@ void show(struct node *node, int depth) {
             printf("%s", category_array[node->category]);
             if(node->token)
                 printf("(%s)", node->token);
+            if(node->type)
+                printf(" - %s", type_name(node->type));
+            if(node->params_list){
+                printf("(");
+                struct param_list *aux = node->params_list;
+                while(aux){
+                    if(aux->next)
+                        printf("%s,", type_name(aux->type));
+                    else
+                        printf("%s", type_name(aux->type));
+                    aux = aux->next;
+                }
+                printf(")");
+            }
             printf("\n");
         
         struct node_list *aux = node->children->next;

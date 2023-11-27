@@ -12,11 +12,6 @@ struct symbol_list {
 	struct symbol_list *next;
 };
 
-struct param_list {
-	enum type type;
-	struct param_list *next;
-};
-
 struct list_symbol_list{
 	char *name;
 	struct symbol_list * list;

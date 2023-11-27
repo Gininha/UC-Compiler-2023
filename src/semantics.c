@@ -7,61 +7,130 @@
 //extern int has_error;
 
 struct symbol_list *symbol_table;
-/*
-void check_expression(struct node *expression){
-    char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
+
+
+bool check_equal(struct node_list *arguments, struct param_list *params){
+    int num = 0;
+
+    while(params){
+        num++;
+        params = params->next;
+    }
+
+    while(arguments){
+        num--;
+        arguments = arguments->next;
+    }
+
+    if(num)
+        return false;
+    return true;
+}
+
+void check_expression(struct node *expression, struct symbol_list *table){
+    //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     //printf("%s\n", category_name[expression->category]);
+    
+    struct symbol_list* aux, *aux2;
+
     switch(expression->category){
 
         case Identifier:
-            if(search_symbol(symbol_table, expression->token) == NULL) {
-                printf("Variable %s (%d:%d) undeclared\n", expression->token, expression->token_line, expression->token_column);
-                has_error = 1;
-            } else {
-                expression->type = search_symbol(symbol_table, expression->token)->type;
+            if(((aux = search_symbol(table, expression->token)) == NULL) && ((aux2 = search_symbol(symbol_table, expression->token)) == NULL)) {
+                printf("Symbol %s undeclared\n", expression->token);
+                //has_error = 1;
+            }else{
+                if(aux){
+                    expression->type = aux->type;
+                }
+                else{
+                    expression->type = aux2->type;
+                }
             }
             break;
         case Natural:
             expression->type = integer_type;
             break;
         case Decimal:
-            expression->type = double_type;
+            printf("dec\n");
+            break;
+        case ChrLit:
+            expression->type = integer_type;
+            break;
+        case StatList:
+            struct node_list *children = expression->children;
+            while((children = children->next) != NULL){
+                check_expression(children->node, table);
+            }
             break;
         case Call:
-            if(search_symbol(symbol_table, getchild(expression, 0)->token) == NULL || search_symbol(symbol_table, getchild(expression, 0)->token)->node->category != Function) {
-                printf("Function %s (%d:%d) undeclared\n", getchild(expression, 0)->token, getchild(expression, 0)->token_line, getchild(expression, 0)->token_column);
-                has_error = 1;
-            } else {
-                struct node *arguments = getchild(expression, 1);
-                struct node *parameters = getchild(search_symbol(symbol_table, getchild(expression, 0)->token)->node, 1);
-                if(parameters != NULL && countchildren(arguments) != countchildren(parameters)) {
-                    printf("Calling %s (%d:%d) with incorrect arguments\n", getchild(expression, 0)->token, getchild(expression, 0)->token_line, getchild(expression, 0)->token_column);
-                    has_error=1;
-                } else {
-                    struct node_list *argument = arguments->children;
-                    while((argument = argument->next) != NULL)
-                        check_expression(argument->node);
+            if(search_symbol(symbol_table, getchild(expression, 0)->token) == NULL) {
+                printf("Function %s undeclared\n", getchild(expression, 0)->token);
+                //has_error = 1;
+            }else{
+                struct node_list *arguments = expression->children->next->next;
+                struct param_list *params = search_symbol(symbol_table, getchild(expression, 0)->token)->params_list;
+                
+                if(check_equal(arguments, params)){
+                    while(arguments){
+                        check_expression(arguments->node, table);
+                        arguments = arguments->next;
+                    }
+                    getchild(expression, 0)->type = search_symbol(symbol_table, getchild(expression, 0)->token)->type;
+                    getchild(expression, 0)->params_list = search_symbol(symbol_table, getchild(expression, 0)->token)->params_list;
+                    expression->type = search_symbol(symbol_table, getchild(expression, 0)->token)->type;
+                }else{
+                    //Numero errado
                 }
             }
-            
             break;
         case If:
-            check_expression(getchild(expression, 0));
-            check_expression(getchild(expression, 1));
-            check_expression(getchild(expression, 2));
+            check_expression(getchild(expression, 0), table);
+            check_expression(getchild(expression, 1), table);
+            check_expression(getchild(expression, 2), table);
             break;
+        case Comma:
+        case Store:
         case Add:
         case Sub:
         case Mul:
         case Div:
-            check_expression(getchild(expression, 0));
-            check_expression(getchild(expression, 1));
+        case Mod:
+        case Or:
+        case And:
+        case BitWiseAnd:
+        case BitWiseOr:
+        case BitWiseXor:
+        case Eq:
+        case Ne:
+        case Le:
+        case Ge:
+        case Lt:
+        case Gt:
+            check_expression(getchild(expression, 0), table);
+            check_expression(getchild(expression, 1), table);
+
+            enum type type1 = getchild(expression, 0)->type;
+            enum type type2 = getchild(expression, 1)->type;
+
+            if(type1 == type2){
+                //printf("%s - %s\n", category_array[expression->category], type_name(expression->type));
+                expression->type = type1;
+            }else{
+                //erro? maybe? idk!
+            }
+            break;
+        case Plus:
+        case Minus:
+        case Not:
+            check_expression(getchild(expression, 0), table);
             break;
         default:
             break;
     }
 }
 
+/*
 void check_parameters(struct node *parameter){
     //char *category_name[] = names;
     struct node_list *parameters = parameter->children;
@@ -147,8 +216,19 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table){
                 check_declaration(children->node, table);
                 break;
             case Return:
-                //printf("Statement\n");
+                check_expression(getchild(children->node, 0), table);
                 break;
+            case While:
+                struct node_list *child = children->node->children;
+                while((child = child->next) != NULL){
+                    check_expression(child->node, table);
+                }
+                break;
+            case If:
+                check_expression(children->node, table);
+                break;
+            case StatList:
+                break;                
             default:
                 
         }
@@ -157,7 +237,8 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table){
 }
 
 void check_function(struct node *function, struct symbol_list *table) {
-    
+    //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
+
     //printf("func\n");
     if(search_symbol(symbol_table, getchild(function, 1)->token) == NULL) {
         insert_symbol(symbol_table, getchild(function, 1)->token, category_type(getchild(function, 0)->category), function, 0);
@@ -189,6 +270,7 @@ void check_funcdeclatarion(struct node *func_dec, struct symbol_list *table){
     //printf("func_dec\n");
     enum type type = category_type(getchild(func_dec, 0)->category);
     struct node *id = getchild(func_dec, 1);
+
     if(search_symbol(symbol_table, id->token) == NULL) {
         insert_symbol(symbol_table, id->token, type, id, 0);
     } else {
