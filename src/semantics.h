@@ -20,6 +20,7 @@ struct list_symbol_list{
 
 void check_program(struct node *program);
 void check_declaration(struct node *declaration, struct symbol_list *table);
+void check_expression(struct node *expression, struct symbol_list *table);
 
 struct symbol_list *insert_symbol(struct symbol_list *symbol_table, char *identifier, enum type type, struct node *node, int is_param);
 struct symbol_list *search_symbol(struct symbol_list *symbol_table, char *identifier);
