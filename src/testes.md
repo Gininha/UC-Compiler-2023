@@ -51,12 +51,21 @@
 
 ### Meta 3
 
+
 # A funcionar
 
 ./uccompiler -s < meta3/start_here.uc | diff meta3/start_here.out -
-
 ./uccompiler -s < meta3/symboltables.uc | diff meta3/symboltables.out -
+
 
 # A nao funcionar
 
-quase tudo
+./uccompiler -s < meta3/first.c | diff meta3/first.out -
+./uccompiler -s < meta3/semantic_errors.uc | diff meta3/semantic_errors.out -
+./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
+./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -     // Este passa so falta os erros
+
+
+# Depressao
+
+./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este da seg fault
