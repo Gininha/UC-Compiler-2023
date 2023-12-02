@@ -5,7 +5,7 @@
 #include "semantics.h"
 
 //extern int has_error;
-
+int *num_params, *num_args;
 struct symbol_list *symbol_table;
 
 struct symbol_list* search_table(struct list_symbol_list* list, char* name){
@@ -23,16 +23,19 @@ struct symbol_list* search_table(struct list_symbol_list* list, char* name){
 
 bool check_equal(struct node_list *arguments, struct param_list *params, struct symbol_list *table){
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
-    
+    *num_params = 0;
+    *num_args = 0;
     int num = 0;
     while(params){
         num++;
+        (*num_params)++;
         params = params->next;
     }
 
     while(arguments){
         num--;
         check_expression(arguments->node, table);
+        (*num_args)++;
         arguments = arguments->next;
     }
 
@@ -46,12 +49,13 @@ void check_expression(struct node *expression, struct symbol_list *table){
     //printf("%s\n", category_name[expression->category]);
     
     struct symbol_list* aux, *aux2;
+    struct node_list *children = expression->children;
 
     switch(expression->category){
 
         case Identifier:
             if(((aux = search_symbol(table, expression->token)) == NULL) && ((aux2 = search_symbol(symbol_table, expression->token)) == NULL)) {
-                printf("Symbol %s undeclared\n", expression->token);
+                printf("Line %d, column %d: Unknown symbol %s\n", expression->line, expression->column, expression->token);
                 expression->type = undef_type;
                 //has_error = 1;
             }else{
@@ -73,7 +77,6 @@ void check_expression(struct node *expression, struct symbol_list *table){
             expression->type = integer_type;
             break;
         case StatList:
-            struct node_list *children = expression->children;
             while((children = children->next) != NULL){
                 check_expression(children->node, table);
             }
@@ -95,7 +98,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
                 if(check_equal(arguments, params, table)){
 
                 }else{
-                    printf("Wrong number of arguments\n");
+                    printf("Line %d, column %d: Wrong number of arguments to function %s (got %d, required %d)\n", getchild(expression, 0)->line, getchild(expression, 0)->column, getchild(expression, 0)->token, *num_args, *num_params);
                     //Numero errado
                 }
             }
@@ -105,6 +108,28 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 1), table);
             check_expression(getchild(expression, 2), table);
             break;
+        case Comma:
+            check_expression(getchild(expression, 0), table);
+            check_expression(getchild(expression, 1), table);
+
+            if(getchild(expression, 0)->type >= getchild(expression, 1)->type)
+                expression->type = getchild(expression, 0)->type;
+            else
+                expression->type = getchild(expression, 1)->type;
+
+            break;
+        case Store:
+            check_expression(getchild(expression, 0), table);
+            check_expression(getchild(expression, 1), table);
+
+            if(getchild(expression, 0)->category != Identifier){
+                printf("Line %d, column %d: Lvalue required\n", expression->line, expression->column);
+                //has_error = 1;
+            }
+
+            enum type type1 = getchild(expression, 0)->type;
+            expression->type = type1;
+            break;
         case Add:
         case Sub:
         case Mul:
@@ -112,33 +137,19 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
 
-            enum type type3 = getchild(expression, 0)->type;
-            enum type type4 = getchild(expression, 1)->type;
-
-            if(type3 == type4){
-                //printf("%s - %s\n", category_array[expression->category], type_name(expression->type));
-                expression->type = type3;
-            }else{
+            if(getchild(expression, 0)->type == undef_type && getchild(expression, 1)->type == undef_type){
                 expression->type = undef_type;
-                //erro? maybe? idk!
             }
-
-            break;
-        case Comma:
-        case Store:
-            check_expression(getchild(expression, 0), table);
-            check_expression(getchild(expression, 1), table);
-
-            enum type type1 = getchild(expression, 0)->type;
-            enum type type2 = getchild(expression, 1)->type;
-            
-            if(type1 == type2){
-                //printf("%s - %s\n", category_array[expression->category], type_name(expression->type));
-                expression->type = type1;
-            }else{
-                //erro? maybe? idk!
+            else{
+                if(getchild(expression, 0)->type == void_type || getchild(expression, 1)->type == void_type){
+                    expression->type = undef_type;
+                }else{
+                    if(getchild(expression, 0)->type >= getchild(expression, 1)->type)
+                        expression->type = getchild(expression, 0)->type;
+                    else
+                        expression->type = getchild(expression, 1)->type;
+                }
             }
-            
             break;
         case Or:
         case And:
@@ -158,9 +169,19 @@ void check_expression(struct node *expression, struct symbol_list *table){
             break;
         case Plus:
         case Minus:
+            check_expression(getchild(expression, 0), table);
+            if(getchild(expression, 0)->type == void_type){
+                if(expression->category == Plus)
+                    printf("Line %d, column %d: Operator + cannot be applied to type void\n", expression->line, expression->column);
+                else
+                    printf("Line %d, column %d: Operator - cannot be applied to type void\n", expression->line, expression->column);
+            }
+            expression->type = getchild(expression, 0)->type;
+            break;
         case Not:
             check_expression(getchild(expression, 0), table);
-            expression->type = getchild(expression, 0)->type;
+            expression->type = integer_type;
+            
             break;
         default:
             break;
@@ -230,6 +251,7 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
 void check_funcbody(struct node* funcbody, struct symbol_list *table){
 
     struct node_list *children = funcbody->children;
+    struct node_list *child;
 
     while((children = children->next) != NULL){
         switch(children->node->category){
@@ -240,7 +262,7 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table){
                 check_expression(getchild(children->node, 0), table);
                 break;
             case While:
-                struct node_list *child = children->node->children;
+                child = children->node->children;
                 while((child = child->next) != NULL){
                     check_expression(child->node, table);
                 }
@@ -275,17 +297,20 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
     struct node *id = getchild(declaration, 1);
     int i = 2;
 
-    if(search_symbol(table, id->token) == NULL) {
-        insert_symbol(table, id->token, type, id, 0);
-    } else {
-        //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-        //has_error = 1;
+    if(id->category == Identifier){
+        if(search_symbol(table, id->token) == NULL) {
+            insert_symbol(table, id->token, type, id, 0);
+        } else {
+            //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
+            //has_error = 1;
+        }
     }
 
     while((id = getchild(declaration, i)) != NULL){
-        if(search_symbol(table, id->token) == NULL && id->category == Identifier) {
-            printf("Unknown symbol %s\n", id->token);
-            id->type = undef_type;
+        if(id->category == Identifier){
+            if(search_symbol(table, id->token) == NULL && id->category == Identifier) {
+                id->type = undef_type;
+            }
         }
         check_expression(id, table);
         i++;
@@ -306,7 +331,7 @@ void check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * list
         while((ParamList = ParamList->next) != NULL){
             if(getchild(ParamList->node, 0)->category == Void){
                 flag = 0;
-                printf("Erro Void\n");
+                printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);
             }
         }
 
@@ -331,6 +356,9 @@ void check_program(struct node *program) {
     struct list_symbol_list * lista = (struct list_symbol_list *) malloc(sizeof(struct list_symbol_list));
     lista->next = NULL;
 
+    num_args = (int *) malloc(sizeof(int));
+    num_params = (int *) malloc(sizeof(int));
+
     insert_symbol(symbol_table, "putchar", category_type(Int), newnode(FuncDeclaration, NULL), 0);
     add_to_params_list(search_symbol(symbol_table, "putchar"), category_type(Int));
     insert_symbol(symbol_table, "getchar", category_type(Int), newnode(FuncDeclaration, NULL), 0);
@@ -353,7 +381,7 @@ void check_program(struct node *program) {
                     new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
                     check_function(child->node, new_table);
                 }else{
-                    printf("Function %s already declared\n", getchild(child->node, 1)->token);
+                    printf("Line %d, column %d: Symbol %s already defined\n", getchild(child->node, 1)->line, getchild(child->node, 1)->column, getchild(child->node, 1)->token);
                 }
                 break;
 
@@ -364,7 +392,7 @@ void check_program(struct node *program) {
                 break;
 
             default:
-
+                break;
         }
         
     }
@@ -411,9 +439,12 @@ struct symbol_list *insert_symbol(struct symbol_list *table, char *identifier, e
 // look up a symbol by its identifier
 struct symbol_list *search_symbol(struct symbol_list *table, char *identifier) {
     struct symbol_list *symbol;
-    for(symbol = table->next; symbol != NULL; symbol = symbol->next)
-        if(strcmp(symbol->identifier, identifier) == 0)
-            return symbol;
+    if(table){    
+        for(symbol = table->next; symbol != NULL; symbol = symbol->next)
+            if(strcmp(symbol->identifier, identifier) == 0)
+                return symbol;
+        return NULL;
+    }
     return NULL;
 }
 

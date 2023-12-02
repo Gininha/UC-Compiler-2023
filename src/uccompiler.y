@@ -53,6 +53,8 @@ struct node *program;
 %nonassoc LOWER
 %nonassoc HIGHER
 
+%locations
+
 %%
 
 Program: FunctionsAndDeclarations                                           {   
@@ -132,6 +134,7 @@ FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
                                                                                 
                                                                                 $$ = newnode(Identifier, $1);
                                                                                 addbrother($$, $3);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
 
                                                                             }
 
@@ -153,6 +156,7 @@ ParameterDeclaration: TypeSpec                                              {
                                                                                 $$ = newnode(ParamDeclaration, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, newnode(Identifier, $2));
+                                                                                Tracker(getchild($$, 1), @2.first_line, @2.first_column);
                                                                             }
                     ;
 
@@ -216,30 +220,35 @@ Aux_Declaration: COMMA Declarator                                           {
 
 TypeSpec: CHAR                                                              {
                                                                                 $$ = newnode(Char, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
         | INT                                                               {
                                                                                 $$ = newnode(Int, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
         | VOID                                                              {
                                                                                 $$ = newnode(Void, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
         | SHORT                                                             {
                                                                                 $$ = newnode(Short, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
         | DOUBLE                                                            {
                                                                                 $$ = newnode(Double, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
         ;
 
 Declarator: IDENTIFIER                                                      {
                                                                                 $$ = newnode(Identifier, $1);
+                                                                                Tracker($$, @1.first_line, @1.first_column);
 
                                                                             }
           | IDENTIFIER ASSIGN Expr                                          {
                                                                                 $$ = newnode(Identifier, $1);
-                                                                                
                                                                                 addbrother($$, $3);
-                                                                                
+                                                                                Tracker($$, @1.first_line, @1.first_column);
                                                                             }
           ;
 
@@ -295,7 +304,7 @@ recursionS: StatementOrError                                                {$$=
           | recursionS StatementOrError                                     {if($1){$$=$1; addbrother($$,$2);} else{$$=$2;}}
           ;
 
-Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3);}
+Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @1.first_line, @1.first_column);}
     | Expr COMMA Expr                                                       {$$ = newnode(Comma, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr PLUS Expr                                                        {$$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr MINUS Expr                                                       {$$ = newnode(Sub, NULL); addchild($$, $1); addchild($$, $3);}
@@ -313,15 +322,15 @@ Expr: Expr ASSIGN Expr                                                      {$$ 
     | Expr GE Expr                                                          {$$ = newnode(Ge, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr LT Expr                                                          {$$ = newnode(Lt, NULL); addchild($$, $1); addchild($$, $3);}
     | Expr GT Expr                                                          {$$ = newnode(Gt, NULL); addchild($$, $1); addchild($$, $3);}
-    | PLUS Expr        %prec NOT                                            {$$ = newnode(Plus, NULL); addchild($$, $2);}
-    | MINUS Expr       %prec NOT                                            {$$ = newnode(Minus, NULL); addchild($$, $2);}
+    | PLUS Expr        %prec NOT                                            {$$ = newnode(Plus, NULL); addchild($$, $2); Tracker($$, @1.first_line, @1.first_column);}
+    | MINUS Expr       %prec NOT                                            {$$ = newnode(Minus, NULL); addchild($$, $2); Tracker($$, @1.first_line, @1.first_column);}
     | NOT Expr                                                              {$$ = newnode(Not, NULL); addchild($$, $2);}
-    | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1));}
-    | IDENTIFIER LPAR Aux_Expr RPAR                                         {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, $3);}
-    | IDENTIFIER                                                            {$$ = newnode(Identifier, $1);}
-    | NATURAL                                                               {$$ = newnode(Natural, $1);}
-    | CHRLIT                                                                {$$ = newnode(ChrLit, $1);}
-    | DECIMAL                                                               {$$ = newnode(Decimal, $1);}
+    | IDENTIFIER LPAR RPAR                                                  {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); Tracker(getchild($$, 0), @1.first_line, @1.first_column);}
+    | IDENTIFIER LPAR Aux_Expr RPAR                                         {$$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, $3); Tracker(getchild($$, 0), @1.first_line, @1.first_column);}
+    | IDENTIFIER                                                            {$$ = newnode(Identifier, $1); Tracker($$, @1.first_line, @1.first_column);}
+    | NATURAL                                                               {$$ = newnode(Natural, $1); Tracker($$, @1.first_line, @1.first_column);}
+    | CHRLIT                                                                {$$ = newnode(ChrLit, $1); Tracker($$, @1.first_line, @1.first_column);}
+    | DECIMAL                                                               {$$ = newnode(Decimal, $1); Tracker($$, @1.first_line, @1.first_column);}
     | LPAR Expr RPAR                                                        {$$ = $2;}
     | IDENTIFIER LPAR error RPAR                                            {$$ = newnode(Null, NULL); has_error = 1;}
     | LPAR error RPAR                                                       {$$ = newnode(Null, NULL); has_error = 1;}

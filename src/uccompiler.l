@@ -11,7 +11,7 @@
     #include "ast.h"
     #include "semantics.h"
 
-    #define YY_USER_ACTION {y_line = line; y_column = column; column += yyleng;}
+    #define YY_USER_ACTION {y_line = yylloc.first_line = line; y_column = yylloc.first_column = column; column += yyleng;}
     #define ADDLINE line++; column = 1;
     #define PASS_TOKEN() yylval.token = strdup(yytext);
 

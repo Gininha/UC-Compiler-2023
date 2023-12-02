@@ -160,6 +160,11 @@ void Remove_conns(struct node_list *children){
 
 }
 
+void Tracker(struct node *node, int line, int column) {
+    node->line = line; 
+    node->column = column;
+}
+
 void Remove_tree(struct node *node) {
     
     if(node){
