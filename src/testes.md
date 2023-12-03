@@ -56,7 +56,7 @@
 
 ./uccompiler -s < meta3/start_here.uc | diff meta3/start_here.out -
 ./uccompiler -s < meta3/symboltables.uc | diff meta3/symboltables.out -
-./uccompiler -s < meta3/first.c | diff meta3/first.out -                                    // Este tem de ser resolvido qq coisa
+./uccompiler -s < meta3/first.c | diff meta3/first.out -                                    
 ./uccompiler -s < meta3/semantic_errors.uc | diff meta3/semantic_errors.out -                
 ./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -  
 
