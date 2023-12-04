@@ -34,8 +34,8 @@ bool check_equal(struct node_list *arguments, struct param_list *params, struct 
                     if(!((arguments->node->type == char_type || params->type == char_type) && (arguments->node->type == integer_type || params->type == integer_type)))
                         printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", getchild(arguments->node, 0)->line, getchild(arguments->node, 0)->column, type_name(arguments->node->type), type_name(params->type));
             }else{
-                if(arguments->node->category == Identifier)
-                    if(!((arguments->node->type == char_type || params->type == char_type) && (arguments->node->type == integer_type || params->type == integer_type)))
+                //if(arguments->node->category == Identifier)
+                    if(arguments->node->type == double_type)
                         printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", arguments->node->line, arguments->node->column, type_name(arguments->node->type), type_name(params->type));
             }//printf("%s\n", category_array[arguments->node->category]);
         }
@@ -124,8 +124,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
             check_expression(getchild(expression, 2), table);
-            if(getchild(expression, 0)->type != integer_type){
-                printf("Line %d, column %d: Conflicting types (got %s, expected int)\n", getchild(expression, 0)->line, getchild(expression, 0)->column, type_name(getchild(expression, 0)->type));
+            if(getchild(expression, 0)->type == double_type){
+                printf("Line %d, column %d: Conflicting types (got double, expected int)\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
             }
             break;
         case Comma:
@@ -271,7 +271,7 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
 
     if(func->params_list == NULL)
         flag = 1;
-
+    
     while((children = children->next) != NULL){
         enum type type = category_type(getchild(children->node, 0)->category);
         struct node *id;
@@ -285,7 +285,8 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
                 //has_error = 1;
             }
         }else{
-            add_to_params_list(func, type);
+            if(flag)
+                add_to_params_list(func, type);
         }
     }
 
@@ -327,7 +328,7 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
 
 void check_function(struct node *function, struct symbol_list *table) {
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
-
+    
     //printf("func\n");
     insert_symbol(symbol_table, getchild(function, 1)->token, category_type(getchild(function, 0)->category), function, 0);
     insert_symbol(table, "return", category_type(getchild(function, 0)->category), getchild(function, 1), 0);
@@ -342,23 +343,25 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
     struct node *id = getchild(declaration, 1);
     int i = 2;
 
-    if(id->category == Identifier){
-        if(search_symbol(table, id->token) == NULL) {
-            insert_symbol(table, id->token, type, id, 0);
-        } else {
-            //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-            //has_error = 1;
-        }
-    }
-
-    while((id = getchild(declaration, i)) != NULL){
+    if(type != void_type){    
         if(id->category == Identifier){
-            if(search_symbol(table, id->token) == NULL && id->category == Identifier) {
-                id->type = undef_type;
+            if(search_symbol(table, id->token) == NULL) {
+                insert_symbol(table, id->token, type, id, 0);
+            } else {
+                //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
+                //has_error = 1;
             }
         }
-        check_expression(id, table);
-        i++;
+
+        while((id = getchild(declaration, i)) != NULL){
+            if(id->category == Identifier){
+                if(search_symbol(table, id->token) == NULL && id->category == Identifier) {
+                    id->type = undef_type;
+                }
+            }
+            check_expression(id, table);
+            i++;
+        }
     }
 
 
@@ -370,20 +373,21 @@ void check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * list
     enum type type = category_type(getchild(func_dec, 0)->category);
     struct node *id = getchild(func_dec, 1);
     int flag = 1;
+    int cnt = 0;
 
     if(search_symbol(symbol_table, id->token) == NULL) {
         struct node_list *ParamList = getchild(func_dec, 2)->children;
         while((ParamList = ParamList->next) != NULL){
-            if(getchild(ParamList->node, 0)->category == Void){
+            if(getchild(ParamList->node, 0)->category == Void && cnt){
                 flag = 0;
                 printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);
             }
+            cnt++;
         }
 
         if(flag){
             insert_symbol(symbol_table, id->token, type, id, 0);
             check_ParamList(getchild(func_dec, 2), NULL, search_symbol(symbol_table, id->token));
-
         }
     } else {
         //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);

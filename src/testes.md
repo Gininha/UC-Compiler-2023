@@ -58,14 +58,15 @@
 ./uccompiler -s < meta3/symboltables.uc | diff meta3/symboltables.out -
 ./uccompiler -s < meta3/first.c | diff meta3/first.out -                                    
 ./uccompiler -s < meta3/semantic_errors.uc | diff meta3/semantic_errors.out -                
-./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -  
-
+./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -
+./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
 
 # A nao funcionar
 
-./uccompiler -s < meta3/expression.c | diff meta3/expression.out -                           // Resolver erros
+...
 
 
 # Depressao
 
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este ja nao da seg fault mas ta muito incompleto
+                                                                // Tabela funçao pow existe e nao devia

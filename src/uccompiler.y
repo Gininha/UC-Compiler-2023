@@ -266,7 +266,7 @@ Statement: Expr SEMI                                                        { $$
                                                                                 }
                                                                                 addchild($$, newnode(Null, NULL));
                                                                             }      
-         | IF LPAR Expr RPAR StatementOrError ELSE StatementOrError                       { 
+         | IF LPAR Expr RPAR StatementOrError ELSE StatementOrError         { 
                                                                                 $$ = newnode(If, NULL); 
                                                                                 addchild($$, $3);
                                                                                 if($5){ 
@@ -305,7 +305,7 @@ recursionS: StatementOrError                                                {$$=
           ;
 
 Expr: Expr ASSIGN Expr                                                      {$$ = newnode(Store, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column);}
-    | Expr COMMA Expr                                                       {$$ = newnode(Comma, NULL); addchild($$, $1); addchild($$, $3);}
+    | Expr COMMA Expr                                                       {$$ = newnode(Comma, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column);}
     | Expr PLUS Expr                                                        {$$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column);}
     | Expr MINUS Expr                                                       {$$ = newnode(Sub, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column);}
     | Expr MUL Expr                                                         {$$ = newnode(Mul, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column);}
