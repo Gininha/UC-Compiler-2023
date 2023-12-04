@@ -144,6 +144,13 @@ void check_expression(struct node *expression, struct symbol_list *table){
 
             if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type)
                 printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+            else{
+                if(getchild(expression, 1)->type == double_type){
+                    if(getchild(expression, 1)->type > getchild(expression, 0)->type)
+                        printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                }
+            }
+        
             if(getchild(expression, 0)->category != Identifier){
                 printf("Line %d, column %d: Lvalue required\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
                 //has_error = 1;
@@ -181,6 +188,16 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case BitWiseAnd:
         case BitWiseOr:
         case BitWiseXor:
+            // Handle bitwise and logical operators as needed
+            check_expression(getchild(expression, 0), table);
+            check_expression(getchild(expression, 1), table);
+            expression->type = integer_type;
+
+            // Check for non-integer types
+            if (getchild(expression, 0)->type == double_type || getchild(expression, 1)->type == double_type || getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type) {
+                printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+            }
+            break;
         case Eq:
         case Ne:
         case Le:
@@ -191,14 +208,10 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 1), table);
             expression->type = integer_type;
 
-            if(getchild(expression, 0)->type == undef_type && getchild(expression, 1)->type == undef_type){
-                printf("Line %d, column %d: Operator %s cannot be applied to types undef, undef\n", expression->line, expression->column, symbol_type(expression->category));
+            if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
+                printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
             }
 
-            if(getchild(expression, 0)->type != getchild(expression, 1)->type)
-                if(!((getchild(expression, 0)->type == char_type || getchild(expression, 0)->type == char_type) && (getchild(expression, 1)->type == integer_type || getchild(expression, 1)->type == integer_type)))
-                    printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
-            
             break;
         case Plus:
         case Minus:

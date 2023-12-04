@@ -63,9 +63,9 @@
 
 # A nao funcionar
 
-./uccompiler -s < meta3/expression.c | diff meta3/expression.out -                           // Tambem so falta erros
+./uccompiler -s < meta3/expression.c | diff meta3/expression.out -                           // Resolver erros
 
 
 # Depressao
 
-./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este da seg fault
+./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este ja nao da seg fault mas ta muito incompleto
