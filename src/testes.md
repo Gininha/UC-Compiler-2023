@@ -61,6 +61,7 @@
 ./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -
 ./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out - 
+./uccompiler -s < meta3/erros2.uc | diff meta3/erros2.out -
 
 # A nao funcionar
 
