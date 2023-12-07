@@ -518,7 +518,7 @@ void check_program(struct node *program) {
 
     struct symbol_list *new_table;
     struct node_list *child = program->children;
-    int flag, num = 0;
+    int flag;
     while((child = child->next) != NULL){
 
         switch(child->node->category){
