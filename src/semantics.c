@@ -31,22 +31,23 @@ bool check_equal(struct node_list *arguments, struct param_list *params, struct 
         if(params->type != arguments->node->type){
             if(arguments->node->category == Call){
                 if(getchild(arguments->node, 0)->category == Identifier)
-                    if(!((arguments->node->type == char_type || params->type == char_type) && (arguments->node->type == integer_type || params->type == integer_type)))
+                    if(arguments->node->type == double_type || arguments->node->type == void_type || arguments->node->type == undef_type )
                         printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", getchild(arguments->node, 0)->line, getchild(arguments->node, 0)->column, type_name(arguments->node->type), type_name(params->type));
             }else{
-                //if(arguments->node->category == Identifier)
-                    if(arguments->node->type == double_type)
-                        printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", arguments->node->line, arguments->node->column, type_name(arguments->node->type), type_name(params->type));
+                if(arguments->node->type == double_type || arguments->node->type == void_type || arguments->node->type == undef_type )
+                    printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", arguments->node->line, arguments->node->column, type_name(arguments->node->type), type_name(params->type));
             }//printf("%s\n", category_array[arguments->node->category]);
         }
-        (*num_params)++;
+        if(params->type != void_type)
+            (*num_params)++;
         (*num_args)++;
         params = params->next;
         arguments = arguments->next;
     }
     
     while(params){
-        (*num_params)++;
+        if(params->type != void_type)
+            (*num_params)++;
         params = params->next;
     }
 
@@ -102,15 +103,20 @@ void check_expression(struct node *expression, struct symbol_list *table){
             break;
         case Call:
             if(search_symbol(symbol_table, getchild(expression, 0)->token) == NULL) {
-                printf("Function %s undeclared\n", getchild(expression, 0)->token);
-                //has_error = 1;
+                int cnt = 0;
                 struct node_list *arguments = expression->children->next;
                 while(arguments){
+                    cnt++;
                     //printf("-->%s %s\n", category_array[arguments->node->category], getchild(expression, 0)->token);
                     check_expression(arguments->node, table);
                     arguments = arguments->next;
                 }
                 expression->type = expression->children->next->node->type;
+
+                if(cnt-1)       //cnt-1 pq um dos arguments de call é o identifier da function
+                    printf("Line %d, column %d: Wrong number of arguments to function %s (got %d, required 0)\n",getchild(expression, 0)->line, getchild(expression, 0)->column, getchild(expression, 0)->token, cnt-1); 
+                //has_error = 1;
+
             }else{
                 
                 struct node_list *arguments = expression->children->next->next;
@@ -131,11 +137,11 @@ void check_expression(struct node *expression, struct symbol_list *table){
             break;
         case If:
             check_expression(getchild(expression, 0), table);
+            if(getchild(expression, 0)->type == double_type || getchild(expression, 0)->type == undef_type){
+                printf("Line %d, column %d: Conflicting types (got %s, expected int)\n", getchild(expression, 0)->line, getchild(expression, 0)->column, type_name(getchild(expression, 0)->type));
+            }
             check_expression(getchild(expression, 1), table);
             check_expression(getchild(expression, 2), table);
-            if(getchild(expression, 0)->type == double_type){
-                printf("Line %d, column %d: Conflicting types (got double, expected int)\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
-            }
             break;
         case Comma:
             check_expression(getchild(expression, 0), table);
@@ -217,7 +223,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 1), table);
             expression->type = integer_type;
 
-            if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
+            if((getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type) && (getchild(expression, 0)->type != getchild(expression, 1)->type)){
                 printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
             }
 
@@ -225,8 +231,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case Plus:
         case Minus:
             check_expression(getchild(expression, 0), table);
-            if(getchild(expression, 0)->type == void_type){
-                printf("Line %d, column %d: Operator %s cannot be applied to type void\n", expression->line, expression->column, symbol_type(expression->category));
+            if(getchild(expression, 0)->type == void_type || getchild(expression, 0)->type == undef_type){
+                printf("Line %d, column %d: Operator %s cannot be applied to type %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type));
             }
             expression->type = getchild(expression, 0)->type;
             break;
@@ -241,6 +247,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case While:
             while((children = children->next) != NULL){
                 check_expression(children->node, table);
+                if(children->node->type == undef_type || children->node->type == double_type || children->node->type == void_type)
+                    printf("Line %d, column %d: Conflicting types (got %s, expected int)\n", children->node->line, children->node->column, type_name(children->node->type));
             }
             break;
         default:
@@ -271,15 +279,15 @@ void add_to_params_list(struct symbol_list *func, enum type type){
         while (aux->next != NULL) {
             aux = aux->next;
         }
-            aux->next = (struct param_list *)malloc(sizeof(struct param_list));
-            aux = aux->next;
-            aux->type = type;
-            aux->next = NULL;
-        } else {
-            func->params_list = (struct param_list *)malloc(sizeof(struct param_list));
-            func->params_list->type = type;
-            func->params_list->next = NULL;
-        }
+        aux->next = (struct param_list *)malloc(sizeof(struct param_list));
+        aux = aux->next;
+        aux->type = type;
+        aux->next = NULL;
+    } else {
+        func->params_list = (struct param_list *)malloc(sizeof(struct param_list));
+        func->params_list->type = type;
+        func->params_list->next = NULL;
+    }
 }
 
 void check_ParamList(struct node* ParamList, struct symbol_list *table, struct symbol_list *func){
@@ -314,6 +322,7 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
 
     struct node_list *children = funcbody->children;
     struct node_list *child;
+    int flag = 0;
 
     while((children = children->next) != NULL){
         switch(children->node->category){
@@ -322,8 +331,23 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
                 break;
             case Return:
                 check_expression(getchild(children->node, 0), table);
-                if(getchild(children->node, 0)->type != tipo)
-                    printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", getchild(children->node, 0)->line, getchild(children->node, 0)->column, type_name(getchild(children->node, 0)->type), type_name(tipo));
+                //enum type tipoooo = search_symbol(table, "return")->type;
+                //printf("-->%s\n", type_name(tipoooo));
+                
+                if((getchild(children->node, 0)->type != tipo)) {
+                    if(!getchild(children->node, 0)->type)
+                        flag = 1;
+                    if(getchild(children->node, 0)->type == double_type)
+                        flag = 1;
+                    if(getchild(children->node, 0)->type == void_type || getchild(children->node, 0)->type == undef_type || tipo == void_type || tipo == undef_type)
+                        flag = 1;
+                    if(flag){
+                        if(getchild(children->node, 0)->type)
+                            printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", getchild(children->node, 0)->line, getchild(children->node, 0)->column, type_name(getchild(children->node, 0)->type), type_name(tipo));
+                        else
+                            printf("Line %d, column %d: Conflicting types (got void, expected %s)\n", getchild(children->node, 0)->line, getchild(children->node, 0)->column, type_name(tipo));         //Trata do caso return;
+                    }
+                }
                 break;
             case While:
                 child = children->node->children;
@@ -365,29 +389,86 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
     struct node_list *children;
     int i = 2;
 
-   
         if(id->category == Identifier){
+            while((brothers = getchild(declaration, i)) != NULL){       // Isto faz com que -> int i = i+i o i+i ficam ambos undef
+                children = brothers->children;
+                while((children = children->next) != NULL){
+                    if(children->node->category == Identifier)
+                        if(!strcmp(children->node->token, id->token)){
+                            children->node->type = undef_type;
+                            printf("Line %d, column %d: Unknown symbol %s\n", children->node->line, children->node->column, children->node->token);
+                        }
+                }
+                
+                check_expression(brothers, table);
+                i++;
+            }
             if(search_symbol(table, id->token) == NULL) {
                 if(type != void_type)
                     insert_symbol(table, id->token, type, id, 0);
+                else
+                    printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
             } else {
-                //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
+                if(type == void_type)
+                    printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
+                
+                if(table != symbol_table)       //Aparentemente so da erro se forem variaveis declaradas dentro da funçao, se forem globais nao ha problema
+                    printf("Line %d, column %d: Symbol %s already defined\n", id->line, id->column, id->token);
+                else{
+                    if(search_symbol(table, id->token)->type != type && search_symbol(table, id->token)->type == double_type)
+                        printf("Line %d, column %d: Conflicting types (got %s, expected double)\n", id->line, id->column, type_name(type));
+                }
                 //has_error = 1;
             }
         }
 
-        while((brothers = getchild(declaration, i)) != NULL){       // Isto faz com que -> int i = i+i o i+i ficam ambos undef
-            children = brothers->children;
-            while((children = children->next) != NULL){
-                if(children->node->category == Identifier)
-                    if(!strcmp(children->node->token, id->token))
-                        children->node->type = undef_type;
+}
+
+void erros_bueda_estranhos(struct node* id, struct node* func){
+
+    enum type type = category_type(getchild(func, 0)->category);
+    struct param_list *aux = search_symbol(symbol_table, id->token)->params_list;
+    struct node_list *aux2 = getchild(func, 2)->children->next;
+    int flag = 0;
+
+        while(aux && aux2){
+            if(aux->type != category_type(getchild(aux2->node, 0)->category)){
+                flag = 1;
             }
-            
-            check_expression(brothers, table);
-            i++;
+            aux = aux->next;
+            aux2 = aux2->next;
         }
 
+        aux2 = getchild(func, 2)->children->next;
+        aux = search_symbol(symbol_table, id->token)->params_list;
+
+        if(type != (search_symbol(symbol_table, id->token)->type) || flag){
+            printf("Line %d, column %d: Conflicting types (got %s", id->line, id->column, type_name(type));
+            if(aux2){
+                printf("(");
+                while(aux2){
+                    if(aux2->next)
+                        printf("%s,", type_name(category_type(getchild(aux2->node, 0)->category)));
+                    else
+                        printf("%s", type_name(category_type(getchild(aux2->node, 0)->category)));
+                    aux2 = aux2->next;
+                }
+                printf(")");
+            }
+            printf(", expected %s", type_name(search_symbol(symbol_table, id->token)->type));
+            if(aux){
+                printf("(");
+                while(aux){
+                    if(aux->next)
+                        printf("%s,", type_name(aux->type));
+                    else
+                        printf("%s", type_name(aux->type));
+                    aux = aux->next;
+                }
+                printf(")");
+            }
+            printf(")\n");
+        }
 }
 
 int check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * lista){
@@ -395,29 +476,25 @@ int check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * lista
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     enum type type = category_type(getchild(func_dec, 0)->category);
     struct node *id = getchild(func_dec, 1);
-    int flag = 1;
+    struct node_list *ParamList = getchild(func_dec, 2)->children;
     int cnt = 0;
+    
+    while((ParamList = ParamList->next) != NULL){
+        if((getchild(ParamList->node, 0)->category == Void && ParamList->next) || (cnt && getchild(ParamList->node, 0)->category == Void)){      //Sempre que ha void deve dar erro a nao ser q seja um unico parametro void 
+            printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);  //int main(void) deve ser aceite, e int main(void, int) nao, e int main(int, void) tambem nao
+            return 0;
+        }
+        cnt++;
+    }
 
     if(search_symbol(symbol_table, id->token) == NULL) {
-        struct node_list *ParamList = getchild(func_dec, 2)->children;
-        while((ParamList = ParamList->next) != NULL){
-            if(getchild(ParamList->node, 0)->category == Void && cnt){
-                flag = 0;
-                printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);
-                return flag;
-            }
-            cnt++;
-        }
+        insert_symbol(symbol_table, id->token, type, id, 0);
+        check_ParamList(getchild(func_dec, 2), NULL, search_symbol(symbol_table, id->token));
+        return 1;
 
-        if(flag){
-            insert_symbol(symbol_table, id->token, type, id, 0);
-            check_ParamList(getchild(func_dec, 2), NULL, search_symbol(symbol_table, id->token));
-            return flag;
-        }
-    } else {
-        //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
-        //has_error = 1;
-    }
+    }else 
+        erros_bueda_estranhos(id, func_dec);
+
     return 0;
 }
 
@@ -441,19 +518,20 @@ void check_program(struct node *program) {
 
     struct symbol_list *new_table;
     struct node_list *child = program->children;
-    int flag;
+    int flag, num = 0;
     while((child = child->next) != NULL){
 
         switch(child->node->category){
             
             case Declaration:
-
+                //printf("%d-->%s\n", ++num, getchild(child->node, 1)->token);
                 check_declaration(child->node, symbol_table);
                 break;
 
             case FuncDefinition:
 
                 if(search_table(lista, getchild(child->node, 1)->token) == NULL){
+                    
                     if(getchild(getchild(child->node, 3), 0) == NULL && getchild(child->node, 0)->category == Void)  //Funcbody != NULL e return != Void
                         new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
                     else
@@ -462,9 +540,11 @@ void check_program(struct node *program) {
 
                     check_function(child->node, new_table);
                 }else{
+
                     if(search_table(lista, getchild(child->node, 1)->token)->next)      // Se o return ainda nao existir a funçao ainda nao existe
                         printf("Line %d, column %d: Symbol %s already defined\n", getchild(child->node, 1)->line, getchild(child->node, 1)->column, getchild(child->node, 1)->token);
                     else{
+                        erros_bueda_estranhos(getchild(child->node, 1), child->node);
                         if(getchild(getchild(child->node, 3), 0) != NULL){
                             check_function(child->node, search_table(lista, getchild(child->node, 1)->token));
                         }

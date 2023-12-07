@@ -60,6 +60,7 @@
 ./uccompiler -s < meta3/semantic_errors.uc | diff meta3/semantic_errors.out -                
 ./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -
 ./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
+./uccompiler -s < meta3/erros.uc | diff meta3/erros.out - 
 
 # A nao funcionar
 
@@ -68,4 +69,4 @@
 
 # Depressao
 
-./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este finalmente so falta resolver erros omg
+./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este finalmente funciona aint no way!

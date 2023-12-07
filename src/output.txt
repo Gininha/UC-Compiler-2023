@@ -1,9 +1,13 @@
 Line 3, column 33: Invalid use of void type in declaration
+Line 5, column 6: Invalid use of void type in declaration
 Line 7, column 13: Unknown symbol as
 Line 7, column 17: Unknown symbol aasd
 Line 7, column 15: Operator - cannot be applied to types undef, undef
 Line 7, column 23: Operator + cannot be applied to types undef, int
 Line 7, column 11: Operator - cannot be applied to types int, undef
+Line 7, column 6: Invalid use of void type in declaration
+Line 7, column 31: Invalid use of void type in declaration
+Line 8, column 10: Invalid use of void type in declaration
 Line 15, column 20: Unknown symbol c
 Line 15, column 21: Operator >= cannot be applied to types undef, int
 Line 15, column 26: Unknown symbol d
@@ -14,10 +18,13 @@ Line 15, column 36: Unknown symbol x
 Line 15, column 37: Operator & cannot be applied to types undef, int
 Line 17, column 5: Unknown symbol c
 Line 17, column 10: Unknown symbol c
+Line 17, column 9: Operator - cannot be applied to type undef
 Line 17, column 7: Operator = cannot be applied to types undef, undef
 Line 18, column 5: Unknown symbol c
 Line 18, column 10: Unknown symbol c
+Line 18, column 9: Operator - cannot be applied to type undef
 Line 18, column 13: Unknown symbol d
+Line 18, column 12: Operator - cannot be applied to type undef
 Line 18, column 11: Operator % cannot be applied to types undef, undef
 Line 18, column 7: Operator = cannot be applied to types undef, int
 Line 23, column 11: Unknown symbol c
@@ -33,18 +40,22 @@ Line 42, column 4: Operator = cannot be applied to types undef, int
 Line 42, column 7: Unknown symbol y
 Line 42, column 8: Operator = cannot be applied to types undef, int
 Line 46, column 5: Unknown symbol c
+Line 46, column 5: Conflicting types (got undef, expected int)
 Line 50, column 5: Unknown symbol d
+Line 50, column 5: Conflicting types (got undef, expected int)
 Line 51, column 11: Unknown symbol c
 Line 51, column 12: Operator = cannot be applied to types undef, int
+Line 56, column 8: Unknown symbol i
+Line 56, column 10: Unknown symbol i
 Line 56, column 9: Operator + cannot be applied to types undef, undef
 Line 68, column 9: Unknown symbol num
 Line 68, column 13: Operator == cannot be applied to types undef, int
-Function bola undeclared
+Line 76, column 8: Wrong number of arguments to function bola (got 2, required 0)
 Line 80, column 12: Wrong number of arguments to function factorial (got 2, required 1)
-Function func1 undeclared
 Line 83, column 2: Unknown symbol func1
-Function func2 undeclared
+Line 83, column 2: Wrong number of arguments to function func1 (got 3, required 0)
 Line 85, column 2: Unknown symbol func2
+Line 85, column 2: Wrong number of arguments to function func2 (got 2, required 0)
 Line 88, column 3: Unknown symbol statement1
 Line 88, column 14: Operator = cannot be applied to types undef, int
 Line 90, column 3: Unknown symbol statement2
@@ -67,42 +78,54 @@ Line 122, column 3: Unknown symbol statement1
 Line 122, column 14: Operator = cannot be applied to types undef, int
 Line 122, column 19: Unknown symbol statement2
 Line 122, column 30: Operator = cannot be applied to types undef, int
-Function ctoi undeclared
 Line 123, column 10: Unknown symbol ctoi
-Line 123, column 15: Wrong number of arguments to function getchar (got 0, required 1)
+Line 123, column 10: Wrong number of arguments to function ctoi (got 1, required 0)
 Line 126, column 6: Wrong number of arguments to function tail_recursive_fac (got 1, required 2)
-Line 0, column 0: Conflicting types (got none, expected int)
+Line 130, column 2: Conflicting types (got void, expected int)
 Line 139, column 9: Unknown symbol o
 Line 139, column 12: Unknown symbol e
-Line 139, column 10: Operator == cannot be applied to types undef, undef
+Line 141, column 16: Unknown symbol abcd
+Line 141, column 16: Conflicting types (got undef, expected int)
+Line 149, column 6: Wrong number of arguments to function chama (got 1, required 0)
+Line 156, column 10: Symbol a already defined
 Line 163, column 16: Unknown symbol r
 Line 163, column 15: Operator = cannot be applied to types char, undef
 Line 174, column 18: Unknown symbol e
 Line 174, column 19: Operator == cannot be applied to types undef, int
-Line 178, column 12: Conflicting types (got char, expected int)
-Function weird_char undeclared
 Line 201, column 9: Unknown symbol weird_char
+Line 201, column 9: Wrong number of arguments to function weird_char (got 2, required 0)
 Line 201, column 26: Operator < cannot be applied to types undef, char
-Function infinite_putchar undeclared
+Line 280, column 10: Conflicting types (got short, expected double)
+Line 287, column 12: Symbol d already defined
+Line 288, column 16: Symbol a already defined
+Line 289, column 11: Symbol b already defined
+Line 289, column 13: Symbol a already defined
 Line 302, column 9: Unknown symbol infinite_putchar
-Function infinite_putchar undeclared
+Line 302, column 9: Wrong number of arguments to function infinite_putchar (got 1, required 0)
 Line 303, column 12: Unknown symbol infinite_putchar
-Line 304, column 9: Wrong number of arguments to function getchar (got 0, required 1)
-Line 305, column 9: Wrong number of arguments to function getchar (got 0, required 1)
-Function function undeclared
+Line 303, column 12: Wrong number of arguments to function infinite_putchar (got 1, required 0)
+Line 309, column 10: Symbol d already defined
+Line 312, column 6: Symbol a already defined
+Line 312, column 10: Symbol b already defined
+Line 312, column 14: Symbol c already defined
+Line 314, column 8: Symbol d already defined
+Line 316, column 7: Symbol c already defined
+Line 319, column 15: Symbol a already defined
+Line 320, column 10: Symbol c already defined
 Line 322, column 5: Unknown symbol function
-Function function undeclared
+Line 322, column 5: Wrong number of arguments to function function (got 1, required 0)
 Line 322, column 19: Unknown symbol function
+Line 322, column 19: Wrong number of arguments to function function (got 1, required 0)
 Line 322, column 17: Operator + cannot be applied to types undef, undef
-Function function undeclared
 Line 324, column 15: Unknown symbol function
+Line 324, column 15: Wrong number of arguments to function function (got 1, required 0)
 Line 324, column 13: Operator < cannot be applied to types int, undef
-Function nao_existe undeclared
 Line 326, column 11: Unknown symbol nao_existe
 Line 326, column 9: Operator % cannot be applied to types double, undef
 Line 336, column 9: Operator ^ cannot be applied to types double, int
 Line 344, column 7: Operator = cannot be applied to types int, double
 Line 345, column 15: Unknown symbol e
+Line 345, column 15: Conflicting types (got undef, expected double)
 ===== Global Symbol Table =====
 putchar	int(int)
 getchar	int(void)
@@ -715,7 +738,7 @@ Program
 ..........Identifier(e) - undef
 ........StatList
 ..........While
-............Identifier(abcd)
+............Identifier(abcd) - undef
 ............Null
 ..........Return
 ............Identifier(a) - int
@@ -799,10 +822,10 @@ Program
 ............Identifier(b) - int
 ............Natural(3) - int
 ..........While
-............Natural(1)
-............Store
-..............Identifier(a)
-..............Natural(0)
+............Natural(1) - int
+............Store - char
+..............Identifier(a) - char
+..............Natural(0) - int
 ..........Store - int
 ............Identifier(c) - int
 ............Natural(5) - int
