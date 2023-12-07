@@ -146,12 +146,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case Comma:
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
-
-            if(getchild(expression, 0)->type >= getchild(expression, 1)->type)
-                expression->type = getchild(expression, 0)->type;
-            else
-                expression->type = getchild(expression, 1)->type;
-
+            expression->type = getchild(expression, 1)->type;
             break;
         case Store:
             check_expression(getchild(expression, 0), table);
@@ -371,7 +366,6 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
 void check_function(struct node *function, struct symbol_list *table) {
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     
-    //printf("func\n");
     insert_symbol(symbol_table, getchild(function, 1)->token, category_type(getchild(function, 0)->category), function, 0);
     insert_symbol(table, "return", category_type(getchild(function, 0)->category), getchild(function, 1), 0);
     check_ParamList(getchild(function, 2), table, search_symbol(symbol_table, getchild(function, 1)->token));
@@ -531,19 +525,21 @@ void check_program(struct node *program) {
             case FuncDefinition:
 
                 if(search_table(lista, getchild(child->node, 1)->token) == NULL){
-                    
-                    if(getchild(getchild(child->node, 3), 0) == NULL && getchild(child->node, 0)->category == Void)  //Funcbody != NULL e return != Void
-                        new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
-                    else
-                        if(getchild(getchild(child->node, 3), 0) != NULL)
+                    if(getchild(getchild(child->node, 3), 0) == NULL && getchild(child->node, 0)->category == Void){  //Funcbody != NULL e return != Void
+                        new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token); 
+                        check_function(child->node, new_table);                  
+                    }else{
+                        if(getchild(getchild(child->node, 3), 0) != NULL){
                             new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
-
-                    check_function(child->node, new_table);
+                            check_function(child->node, new_table);
+                        }
+                    }
+                    
                 }else{
-
-                    if(search_table(lista, getchild(child->node, 1)->token)->next)      // Se o return ainda nao existir a funçao ainda nao existe
+                    if(search_table(lista, getchild(child->node, 1)->token)->next){      // Se o return ainda nao existir a funçao ainda nao existe
+                        //show_symbol_table(search_table(lista, getchild(child->node, 1)->token));
                         printf("Line %d, column %d: Symbol %s already defined\n", getchild(child->node, 1)->line, getchild(child->node, 1)->column, getchild(child->node, 1)->token);
-                    else{
+                    }else{
                         erros_bueda_estranhos(getchild(child->node, 1), child->node);
                         if(getchild(getchild(child->node, 3), 0) != NULL){
                             check_function(child->node, search_table(lista, getchild(child->node, 1)->token));
@@ -556,8 +552,10 @@ void check_program(struct node *program) {
             case FuncDeclaration:
 
                 flag = check_funcdeclatarion(child->node, lista);
-                if(flag)
+                if(flag){
                     new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
+                }
+
                 break;
 
             default:
