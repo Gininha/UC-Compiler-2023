@@ -8,7 +8,7 @@ enum type {kek, void_type, undef_type, char_type, short_type, integer_type, doub
 
 #define type_name(type) (type == integer_type ? "int" : (type == double_type ? "double" : (type == char_type ? "char" : (type == short_type ? "short" : (type == void_type ? "void" : (type == undef_type ? "undef" : "none"))))))
 #define category_type(category) (category == Int ? integer_type : (category == Double ? double_type : (category == Char ? char_type : (category == Short ? short_type : (category == Void ? void_type: no_type)))))
-#define symbol_type(category) (category == Or ? "||" : (category == And ? "&&" : (category == Mod ? "%" : (category == BitWiseAnd ? "&" : (category == BitWiseOr ? "|" : (category == BitWiseXor ? "^" : (category == Eq ? "==" : (category == Ne ? "!=" : (category == Le ? "<=" : (category == Ge ? ">=" : (category == Lt ? "<" : (category == Gt ? ">" : (category == Plus ? "+" : (category == Add ? "+" : (category == Mul ? "*" : (category == Div ?  "/" : "-"))))))))))))))))
+#define symbol_type(category) (category == Or ? "||" : (category == And ? "&&" : (category == Mod ? "%" : (category == BitWiseAnd ? "&" : (category == BitWiseOr ? "|" : (category == BitWiseXor ? "^" : (category == Eq ? "==" : (category == Ne ? "!=" : (category == Le ? "<=" : (category == Ge ? ">=" : (category == Lt ? "<" : (category == Gt ? ">" : (category == Plus ? "+" : (category == Add ? "+" : (category == Mul ? "*" : (category == Div ?  "/" : (category == Comma ? "," : "-")))))))))))))))))
 
 struct node {
     enum category category;

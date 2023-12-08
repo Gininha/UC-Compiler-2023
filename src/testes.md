@@ -71,3 +71,5 @@
 # Depressao
 
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este finalmente funciona aint no way!
+
+

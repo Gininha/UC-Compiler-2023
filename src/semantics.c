@@ -25,7 +25,7 @@ bool check_equal(struct node_list *arguments, struct param_list *params, struct 
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     *num_params = 0;
     *num_args = 0;
-    
+
     while(params && arguments){
         check_expression(arguments->node, table);
         if(params->type != arguments->node->type){
@@ -62,11 +62,86 @@ bool check_equal(struct node_list *arguments, struct param_list *params, struct 
     return true;
 }
 
+void erros_bueda_estranhos2(struct node* expression){
+    struct symbol_list* aux = NULL, *aux2 = NULL;
+    struct param_list* aux_p = NULL, *aux2_p = NULL;
+    struct param_list* aux_p2 = NULL, *aux2_p2 = NULL;
+    int flag_p = 0;
+
+    if(getchild(expression, 0)->category == Identifier || getchild(expression, 1)->category == Identifier){
+                if((aux = search_symbol(symbol_table, getchild(expression, 0)->token)) != NULL || (aux2 = search_symbol(symbol_table, getchild(expression, 1)->token)) != NULL){
+                    
+                    if(getchild(expression, 0)->category == Identifier && getchild(expression, 1)->category == Identifier){
+                        if(strcmp(getchild(expression, 0)->token, getchild(expression, 1)->token) == 0){
+                            if(aux || aux2)
+                                expression->type = undef_type;
+                            return;
+                        }
+                    }
+                    
+                    if(aux){
+                        aux_p = aux->params_list;
+                        getchild(expression, 0)->params_list = aux->params_list;
+                    }
+                    if(aux2){
+                        aux2_p = aux2->params_list;
+                        getchild(expression, 1)->params_list = aux2->params_list;
+                        expression->type = undef_type;
+                    }
+
+                    aux_p2 = aux_p;
+                    aux2_p2 = aux2_p;
+
+                    while(aux_p2 != NULL && aux2_p2 != NULL){
+                        if(aux_p2->type != aux2_p2->type)
+                            flag_p = 1;
+                        
+                        aux_p2 = aux_p2->next;
+                        aux2_p2 = aux2_p2->next;
+                    }
+
+                    if(aux_p2 != NULL){
+                        flag_p = 1;
+                    }
+                    if(aux2_p2 != NULL)
+                        flag_p = 1;
+
+                    if(flag_p){
+                        printf("Line %d, column %d: Operator %s cannot be applied to types %s", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type));
+                        if(aux_p){
+                            printf("(");
+                            while(aux_p){
+                                if(aux_p->next)
+                                    printf("%s,", type_name(aux_p->type));
+                                else
+                                    printf("%s", type_name(aux_p->type));
+                                aux_p = aux_p->next;
+                            }
+                            printf("), %s", type_name(getchild(expression, 1)->type));
+                        }else
+                            printf(", %s", type_name(getchild(expression, 1)->type));
+                        if(aux2_p){
+                            printf("(");
+                            while(aux2_p){
+                                if(aux2_p->next)
+                                    printf("%s,", type_name(aux2_p->type));
+                                else
+                                    printf("%s", type_name(aux2_p->type));
+                                aux2_p = aux2_p->next;
+                            }
+                            printf(")");
+                        }
+                        printf("\n");   
+                    }
+                }
+            }
+}
+
 void check_expression(struct node *expression, struct symbol_list *table){
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     //printf("%s\n", category_name[expression->category]);
     
-    struct symbol_list* aux, *aux2;
+    struct symbol_list* aux = NULL, *aux2 = NULL;
     struct node_list *children = expression->children;
 
     switch(expression->category){
@@ -118,7 +193,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
                 //has_error = 1;
 
             }else{
-                
+                //printf("ola\n");
                 struct node_list *arguments = expression->children->next->next;
                 struct param_list *params = search_symbol(symbol_table, getchild(expression, 0)->token)->params_list;
                 //printf("-->%s %s\n", category_array[expression->category], getchild(expression, 0)->token);
@@ -146,7 +221,9 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case Comma:
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
-            expression->type = getchild(expression, 1)->type;
+            erros_bueda_estranhos2(expression);
+            if(!expression->type)
+                expression->type = getchild(expression, 1)->type;
             break;
         case Store:
             check_expression(getchild(expression, 0), table);
@@ -175,6 +252,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
         case Div:
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
+            
+            erros_bueda_estranhos2(expression);
 
             if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
                 expression->type = undef_type;
@@ -191,6 +270,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
                         expression->type = getchild(expression, 1)->type;
                 }
             }
+        
             break;
         case Or:
         case And:
@@ -252,16 +332,18 @@ void check_expression(struct node *expression, struct symbol_list *table){
     }
 }
 
-struct symbol_list * add_to_list_of_tables(struct list_symbol_list * lista, char *name){
+struct symbol_list * add_to_list_of_tables(struct list_symbol_list * lista, struct node* no){
+    //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     struct symbol_list *new_table = (struct symbol_list *) malloc(sizeof(struct symbol_list));
     new_table->next = NULL;
+    new_table->type = category_type(getchild(no, 0)->category);
     struct list_symbol_list * aux = lista;
                 
     while(aux->next != NULL){
         aux = aux->next;
     }
     aux->list = new_table;
-    aux->name = name;
+    aux->name = getchild(no, 1)->token;
     aux->next = (struct list_symbol_list *) malloc(sizeof(struct list_symbol_list));
     aux->next->next = NULL;
 
@@ -292,6 +374,7 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
 
     if(func->params_list == NULL)
         flag = 1;
+
     
     while((children = children->next) != NULL){
         enum type type = category_type(getchild(children->node, 0)->category);
@@ -302,7 +385,9 @@ void check_ParamList(struct node* ParamList, struct symbol_list *table, struct s
                 if(flag)
                     add_to_params_list(func, type);
             } else {
-                //printf("Identifier %s (%d:%d) already declared\n", id->token, id->token_line, id->token_column);
+                printf("Line %d, column %d: Symbol %s already defined\n", id->line, id->column, id->token);
+                if(flag)
+                    add_to_params_list(func, type);
                 //has_error = 1;
             }
         }else{
@@ -326,22 +411,26 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
                 break;
             case Return:
                 check_expression(getchild(children->node, 0), table);
-                //enum type tipoooo = search_symbol(table, "return")->type;
-                //printf("-->%s\n", type_name(tipoooo));
-                
+
                 if((getchild(children->node, 0)->type != tipo)) {
-                    if(!getchild(children->node, 0)->type)
-                        flag = 1;
+
                     if(getchild(children->node, 0)->type == double_type)
                         flag = 1;
-                    if(getchild(children->node, 0)->type == void_type || getchild(children->node, 0)->type == undef_type || tipo == void_type || tipo == undef_type)
-                        flag = 1;
+                    if(!getchild(children->node, 0)->type){
+                        if(tipo != void_type)
+                            flag = 1;
+                    }else{
+                        if((getchild(children->node, 0)->type == void_type || tipo == void_type) || (getchild(children->node, 0)->type == undef_type || tipo == undef_type))
+                            flag = 1;
+                    }
+
                     if(flag){
                         if(getchild(children->node, 0)->type)
                             printf("Line %d, column %d: Conflicting types (got %s, expected %s)\n", getchild(children->node, 0)->line, getchild(children->node, 0)->column, type_name(getchild(children->node, 0)->type), type_name(tipo));
                         else
                             printf("Line %d, column %d: Conflicting types (got void, expected %s)\n", getchild(children->node, 0)->line, getchild(children->node, 0)->column, type_name(tipo));         //Trata do caso return;
                     }
+                    
                 }
                 break;
             case While:
@@ -365,12 +454,12 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
 
 void check_function(struct node *function, struct symbol_list *table) {
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
-    
+
     insert_symbol(symbol_table, getchild(function, 1)->token, category_type(getchild(function, 0)->category), function, 0);
     insert_symbol(table, "return", category_type(getchild(function, 0)->category), getchild(function, 1), 0);
     check_ParamList(getchild(function, 2), table, search_symbol(symbol_table, getchild(function, 1)->token));
     check_funcbody(getchild(function, 3), table, category_type(getchild(function, 0)->category));
-    
+
 }
 
 void check_declaration(struct node *declaration, struct symbol_list *table){
@@ -412,6 +501,7 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
                     if(search_symbol(table, id->token)->type != type && search_symbol(table, id->token)->type == double_type)
                         printf("Line %d, column %d: Conflicting types (got %s, expected double)\n", id->line, id->column, type_name(type));
                 }
+                
                 //has_error = 1;
             }
         }
@@ -482,15 +572,71 @@ int check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * lista
     }
 
     if(search_symbol(symbol_table, id->token) == NULL) {
+
         insert_symbol(symbol_table, id->token, type, id, 0);
         check_ParamList(getchild(func_dec, 2), NULL, search_symbol(symbol_table, id->token));
+
+        struct symbol_list *aux = (struct symbol_list *) malloc(sizeof(struct symbol_list));
+        aux->next = NULL;
+        struct node_list *children = getchild(func_dec, 2)->children;
+
+        while((children = children->next) != NULL){
+            if(getchild(children->node, 1))
+                insert_symbol(aux, getchild(children->node, 1)->token, category_type(getchild(children->node, 0)->category), getchild(children->node, 1), 0);
+        }
+
         return 1;
 
-    }else 
+    }else{
         erros_bueda_estranhos(id, func_dec);
+        
+        if(search_symbol(symbol_table, id->token)->type == type)
+            print_erros(func_dec);
+        
+    } 
 
     return 0;
 }
+
+void print_erros(struct node* node){
+    struct node_list* children = getchild(node, 2)->children->next;
+    struct param_list* aux = search_symbol(symbol_table, getchild(node, 1)->token)->params_list;
+
+    while(children && aux){
+        aux = aux->next;
+        children = children->next;
+    }
+
+    if(children || aux ){
+        printf("Line %d, column %d: Conflicting types (got %s", getchild(node,1)->line, getchild(node,1)->column ,type_name(category_type(getchild(node, 0)->category)));
+        if((children = getchild(node, 2)->children->next) != NULL){
+            printf("(");
+            while(children){
+                if(children->next)
+                    printf("%s,", type_name(category_type(getchild(children->node, 0)->category)));
+                else
+                    printf("%s", type_name(category_type(getchild(children->node, 0)->category)));
+                children = children->next;
+            }
+            printf("), expected %s", type_name(search_symbol(symbol_table, getchild(node, 1)->token)->type));
+        }else
+            printf(", expected %s", type_name(search_symbol(symbol_table, getchild(node, 1)->token)->type));
+
+        if((aux = search_symbol(symbol_table, getchild(node, 1)->token)->params_list) != NULL){
+            printf("(");
+            while(aux){
+                if(aux->next)
+                    printf("%s,", type_name(aux->type));
+                else
+                    printf("%s", type_name(aux->type));
+                aux = aux->next;
+            }
+            printf(")");
+        }
+        printf(")");
+        printf("\n");
+    }
+}   
 
 // semantic analysis begins here, with the AST root node
 void check_program(struct node *program) {
@@ -512,7 +658,7 @@ void check_program(struct node *program) {
 
     struct symbol_list *new_table;
     struct node_list *child = program->children;
-    int flag;
+    int flag, flag_params = 0;
     while((child = child->next) != NULL){
 
         switch(child->node->category){
@@ -525,12 +671,12 @@ void check_program(struct node *program) {
             case FuncDefinition:
 
                 if(search_table(lista, getchild(child->node, 1)->token) == NULL){
-                    if(getchild(getchild(child->node, 3), 0) == NULL && getchild(child->node, 0)->category == Void){  //Funcbody != NULL e return != Void
-                        new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token); 
+                    if(getchild(getchild(child->node, 3), 0) == NULL){  //Funcbody != NULL e return != Void
+                        new_table = add_to_list_of_tables(lista, child->node); 
                         check_function(child->node, new_table);                  
                     }else{
                         if(getchild(getchild(child->node, 3), 0) != NULL){
-                            new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
+                            new_table = add_to_list_of_tables(lista, child->node);
                             check_function(child->node, new_table);
                         }
                     }
@@ -539,21 +685,43 @@ void check_program(struct node *program) {
                     if(search_table(lista, getchild(child->node, 1)->token)->next){      // Se o return ainda nao existir a funçao ainda nao existe
                         //show_symbol_table(search_table(lista, getchild(child->node, 1)->token));
                         printf("Line %d, column %d: Symbol %s already defined\n", getchild(child->node, 1)->line, getchild(child->node, 1)->column, getchild(child->node, 1)->token);
+
                     }else{
-                        erros_bueda_estranhos(getchild(child->node, 1), child->node);
-                        if(getchild(getchild(child->node, 3), 0) != NULL){
-                            check_function(child->node, search_table(lista, getchild(child->node, 1)->token));
-                        }
+                        print_erros(child->node);
+                        erros_bueda_estranhos(getchild(child->node, 1), child->node);       
+                        
+                        // Check type and params equal 
+                        if(search_table(lista, getchild(child->node, 1)->token)->type == category_type(getchild(child->node, 0)->category)){
+                            
+                            struct param_list* aux = search_symbol(symbol_table, getchild(child->node, 1)->token)->params_list;
+                            struct node_list* paramList = getchild(child->node, 2)->children->next; 
+                            //printf("%s\n",getchild(child->node, 1)->token);
+                            while(aux && paramList){
+                                //printf("%s %s\n", type_name(aux->type), type_name(category_type(getchild(paramList->node, 0)->category)));
+                                if(aux->type != category_type(getchild(paramList->node, 0)->category)){
+                                    flag_params = 1;
+                                }
+                                aux = aux->next;
+                                paramList = paramList->next;
+                            }
+
+                            if(aux)
+                                flag_params = 1;
+                            if(paramList)
+                                flag_params = 1;
+                            if(!flag_params)
+                                check_function(child->node, search_table(lista, getchild(child->node, 1)->token));
+                        }    
                     }
                 }
                 
                 break;
 
             case FuncDeclaration:
-
+                //printf("%s\n", category_array[child->node->category]);
                 flag = check_funcdeclatarion(child->node, lista);
                 if(flag){
-                    new_table = add_to_list_of_tables(lista, getchild(child->node, 1)->token);
+                    new_table = add_to_list_of_tables(lista, child->node);
                 }
 
                 break;
@@ -597,6 +765,8 @@ struct symbol_list *insert_symbol(struct symbol_list *table, char *identifier, e
             symbol->next = new;    /* insert new symbol at the tail of the list */
             break;
         } else if(strcmp(symbol->next->identifier, identifier) == 0) {
+            if(node->line != 0)
+                printf("Line %d, column %d: Symbol %s already defined\n", node->line, node->column, node->token);
             free(new);
             return NULL;           /* return NULL if symbol is already inserted */
         }
@@ -608,6 +778,8 @@ struct symbol_list *insert_symbol(struct symbol_list *table, char *identifier, e
 // look up a symbol by its identifier
 struct symbol_list *search_symbol(struct symbol_list *table, char *identifier) {
     struct symbol_list *symbol;
+    if(identifier == NULL)
+        return NULL;
     if(table){    
         for(symbol = table->next; symbol != NULL; symbol = symbol->next)
             if(strcmp(symbol->identifier, identifier) == 0)
