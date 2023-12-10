@@ -86,7 +86,7 @@ void erros_bueda_estranhos2(struct node* expression){
                     if(aux2){
                         aux2_p = aux2->params_list;
                         getchild(expression, 1)->params_list = aux2->params_list;
-                        expression->type = undef_type;
+                        //expression->type = undef_type;
                     }
 
                     aux_p2 = aux_p;
@@ -107,6 +107,8 @@ void erros_bueda_estranhos2(struct node* expression){
                         flag_p = 1;
 
                     if(flag_p){
+                        if(aux2)
+                            expression->type = undef_type;
                         printf("Line %d, column %d: Operator %s cannot be applied to types %s", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type));
                         if(aux_p){
                             printf("(");
@@ -487,8 +489,15 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
                 i++;
             }
             if(search_symbol(table, id->token) == NULL) {
-                if(type != void_type)
-                    insert_symbol(table, id->token, type, id, 0);
+                if(type != void_type){
+                    if(getchild(declaration, 2)){
+                        if(getchild(declaration, 2)->type == double_type && type != double_type)
+                            printf("Line %d, column %d: Conflicting types (got double, expected %s)\n", id->line, id->column, type_name(type));
+                        else
+                            insert_symbol(table, id->token, type, id, 0); 
+                    }else
+                        insert_symbol(table, id->token, type, id, 0); 
+                }
                 else
                     printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
             } else {
