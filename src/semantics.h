@@ -4,18 +4,18 @@
 #include "ast.h"
 
 struct symbol_list {
-	char *identifier;
-	enum type type;
-	bool param;
-	struct param_list *params_list;
-	struct node *node;
-	struct symbol_list *next;
+    char *identifier;
+    enum type type;
+    bool param;
+    struct param_list *params_list;
+    struct node *node;
+    struct symbol_list *next;
 };
 
-struct list_symbol_list{
-	char *name;
-	struct symbol_list * list;
-	struct list_symbol_list *next;
+struct list_symbol_list {
+    char *name;
+    struct symbol_list *list;
+    struct list_symbol_list *next;
 };
 
 void check_program(struct node *program);
