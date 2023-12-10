@@ -3,33 +3,33 @@
 2021199102 Luis Miguel Gonçalves Leite
 */
 %{
-    #include "ast.h"
-    #include "semantics.h"
-    #include "y.tab.h"
+#include "ast.h"
+#include "semantics.h"
+#include "y.tab.h"
 
-    #include <ctype.h>
-    #include <stdlib.h>
-    #include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
-    #define YY_USER_ACTION { y_line = yylloc.first_line = line; y_column = yylloc.first_column = column; column += yyleng; }
-    #define ADDLINE line++; column = 1;
-    #define PASS_TOKEN() yylval.token = strdup(yytext);
+#define YY_USER_ACTION { y_line = yylloc.first_line = line; y_column = yylloc.first_column = column; column += yyleng; }
+#define ADDLINE line++; column = 1;
+#define PASS_TOKEN() yylval.token = strdup(yytext);
 
-    int yyparse(void);
-    void yyerror(char *);
+int yyparse(void);
+void yyerror(char *);
 
-    bool l = 0;
-    bool y = 0;
-    bool s = 0;
+bool l = 0;
+bool y = 0;
+bool s = 0;
 
-    int line = 1, column = 1, y_line = -1, y_column = -1;
-    int line_comm, column_comm;
-    bool has_error = 0;
-    bool print_tree;
+int line = 1, column = 1, y_line = -1, y_column = -1;
+int line_comm, column_comm;
+bool has_error = 0;
+bool print_tree;
 
-    char *string = NULL;
+char *string = NULL;
 
-    extern struct node *program;
+extern struct node *program;
 %}
 
 %X Comment
@@ -125,6 +125,7 @@ void                     { if (l) printf("VOID\n"); if(y) return VOID; }
 %%
 
 extern int yylex();
+
 int main(int argc, char *argv[]) {
 
     switch (argc) {

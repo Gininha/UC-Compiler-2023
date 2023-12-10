@@ -1,5 +1,4 @@
 %{
-
 #include "ast.h"
 #include <stddef.h>
 
@@ -9,7 +8,6 @@ void yyerror(char *);
 extern int has_error;
 
 struct node *program;
-
 %}
 
 %token BITWISEAND BITWISEOR BITWISEXOR AND ASSIGN MUL COMMA DIV EQ GE GT LBRACE LE LPAR LT MINUS MOD
@@ -147,9 +145,9 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                 addbrother($$, $3);
                                                                                 
 
-                                                                                struct node_list* aux = $3->brotherhood;
-                                                                                struct node_list* aux_children = $3->children;
-                                                                                struct node_list* antigo_child = aux_children;
+                                                                                struct node_list *aux = $3->brotherhood;
+                                                                                struct node_list *aux_children = $3->children;
+                                                                                struct node_list *antigo_child = aux_children;
 
                                                                                 $3->children = malloc(sizeof(struct node_list));
                                                                                 addchild($3, newnode($1->category, $1->token));
@@ -189,7 +187,7 @@ Aux_Declaration: COMMA Declarator                                           {
                                                                             }
                | Aux_Declaration COMMA Declarator                           {
                                                                                 $$ = $1;
-                                                                                struct node* temp = newnode(Declaration, NULL);
+                                                                                struct node *temp = newnode(Declaration, NULL);
                                                                                 addchild(temp, $3);
                                                                                 addbrother($$, temp);
                                                                             }
@@ -257,7 +255,6 @@ Statement: Expr SEMI                                                        { $$
                                                                                     addchild($$, newnode(Null, NULL));
                                                                                 }
                                                                             }
-
          | WHILE LPAR Expr RPAR StatementOrError                            {
                                                                                 $$ = newnode(While, NULL);
                                                                                 addchild($$, $3);
