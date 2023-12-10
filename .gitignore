@@ -62,3 +62,5 @@ y.tab.c
 meta2
 meta3
 testes.sh
+src/uccompiler
+src/output.txt

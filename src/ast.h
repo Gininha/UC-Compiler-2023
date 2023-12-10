@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-enum category { Program, Declaration, FuncDeclaration, FuncDefinition, ParamList, FuncBody, ParamDeclaration, StatList, If, While, Return, Or, And, Eq, Ne, Lt, Gt, Le, Ge, Add, Sub, Mul, Div, Mod, Not, Minus, Plus, Store, Comma, Call, BitWiseAnd, BitWiseXor, BitWiseOr, Char, ChrLit, Identifier, Int, Short, Natural, Double, Decimal, Void, Null };
+enum category {Program, Declaration, FuncDeclaration, FuncDefinition, ParamList, FuncBody, ParamDeclaration, StatList, If, While, Return, Or, And, Eq, Ne, Lt, Gt, Le, Ge, Add, Sub, Mul, Div, Mod, Not, Minus, Plus, Store, Comma, Call, BitWiseAnd, BitWiseXor, BitWiseOr, Char, ChrLit, Identifier, Int, Short, Natural, Double, Decimal, Void, Null};
 enum type {kek, void_type, undef_type, char_type, short_type, integer_type, double_type, no_type};
 
 #define type_name(type) (type == integer_type ? "int" : (type == double_type ? "double" : (type == char_type ? "char" : (type == short_type ? "short" : (type == void_type ? "void" : (type == undef_type ? "undef" : "none"))))))
@@ -22,8 +22,8 @@ struct node {
 };
 
 struct param_list {
-	enum type type;
-	struct param_list *next;
+    enum type type;
+    struct param_list *next;
 };
 
 struct node_list {
@@ -32,7 +32,7 @@ struct node_list {
 };
 
 struct node *newnode(enum category category, char *token);
-void set_father(struct node* father, struct node* child);
+void set_father(struct node *father, struct node *child);
 void print_d3(struct node *node);
 void addchild(struct node *parent, struct node *child);
 void addbrother(struct node *brother, struct node *new_brother);

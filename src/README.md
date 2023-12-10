@@ -1,12 +1,8 @@
 # Neste ficheiro estao os testes q foram testados
 
+## Meta 2
 
-
-###### --------------------------------------------------------------------------------------------------
-
-### Meta 2
-
-# cenas (a funcionar)
+### cenas (a funcionar)
 
 ./uccompiler -t < meta2/first.c | diff meta2/first.out -
 ./uccompiler -t < meta2/test_statementsAST.uc | diff meta2/test_statementsAST.out -
@@ -26,8 +22,7 @@
 ./uccompiler -t < meta2/factorials.uc | diff meta2/factorials.out -                     
 ./uccompiler -t < meta2/miscellaneous_test.uc | diff meta2/miscellaneous_test.out -        
 
-
-# erros (a funcionar)
+### erros (a funcionar)
 
 ./uccompiler -t < meta2/DecDefErrors.uc | diff meta2/DecDefErrors.out -
 ./uccompiler -t < meta2/declarations.uc | diff meta2/declarations.out -
@@ -42,17 +37,13 @@
 ./uccompiler -t < meta2/test_emptySpaces.uc | diff meta2/test_emptySpaces.out -             
 ./uccompiler -t < meta2/zerobytes.uc | diff meta2/zerobytes.out -                           
 
+### resto (a nao funcionar)
 
-# resto (a nao funcionar)
+### All Working !!!
 
-# All Working !!!
+## Meta 3
 
-###### --------------------------------------------------------------------------------------------------
-
-### Meta 3
-
-
-# A funcionar
+### A funcionar
 
 ./uccompiler -s < meta3/start_here.uc | diff meta3/start_here.out -
 ./uccompiler -s < meta3/symboltables.uc | diff meta3/symboltables.out -
@@ -63,12 +54,11 @@
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out - 
 ./uccompiler -s < meta3/erros2.uc | diff meta3/erros2.out -
 
-# A nao funcionar
+### A nao funcionar
 
 ...
 
-
-# Depressao
+### Depressao
 
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este finalmente funciona aint no way!
 
