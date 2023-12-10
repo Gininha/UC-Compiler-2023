@@ -53,6 +53,7 @@
 ./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out - 
 ./uccompiler -s < meta3/erros2.uc | diff meta3/erros2.out -
+./uccompiler -s < meta3/funcVars.uc | diff meta3/funcVars.out -                 //O erro do Add é para ignorar
 
 ### A nao funcionar
 
