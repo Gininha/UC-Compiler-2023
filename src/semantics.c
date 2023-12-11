@@ -62,28 +62,27 @@ bool check_equal(struct node_list *arguments, struct param_list *params, struct 
     return true;
 }
 
-void erros_bueda_estranhos2(struct node* expression){
+int erros_bueda_estranhos2(struct node* expression){
     struct symbol_list* aux = NULL, *aux2 = NULL;
     struct param_list* aux_p = NULL, *aux2_p = NULL;
     struct param_list* aux_p2 = NULL, *aux2_p2 = NULL;
     int flag_p = 0;
 
     if(getchild(expression, 0)->category == Identifier || getchild(expression, 1)->category == Identifier){
-                if((aux = search_symbol(symbol_table, getchild(expression, 0)->token)) != NULL || (aux2 = search_symbol(symbol_table, getchild(expression, 1)->token)) != NULL){
+                if(search_symbol(symbol_table, getchild(expression, 0)->token) != NULL || search_symbol(symbol_table, getchild(expression, 1)->token) != NULL){
                     
                     if(getchild(expression, 0)->category == Identifier && getchild(expression, 1)->category == Identifier){
                         if(strcmp(getchild(expression, 0)->token, getchild(expression, 1)->token) == 0){
-                            if(aux || aux2)
-                                expression->type = undef_type;
-                            return;
+                            expression->type = undef_type;
+                            return 0;
                         }
                     }
                     
-                    if(aux){
+                    if((aux = search_symbol(symbol_table, getchild(expression, 0)->token)) != NULL){
                         aux_p = aux->params_list;
                         getchild(expression, 0)->params_list = aux->params_list;
                     }
-                    if(aux2){
+                    if((aux2 = search_symbol(symbol_table, getchild(expression, 1)->token)) != NULL){
                         aux2_p = aux2->params_list;
                         getchild(expression, 1)->params_list = aux2->params_list;
                         //expression->type = undef_type;
@@ -133,10 +132,12 @@ void erros_bueda_estranhos2(struct node* expression){
                             }
                             printf(")");
                         }
-                        printf("\n");   
+                        printf("\n");
+                        return 1;
                     }
                 }
             }
+            return 0;
 }
 
 void check_expression(struct node *expression, struct symbol_list *table){
@@ -231,24 +232,25 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
 
-            //erros_bueda_estranhos2(expression);
+            if(!erros_bueda_estranhos2(expression)){
 
-            if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type)
-                printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
-            else{
-                if(getchild(expression, 1)->type == double_type){
-                    if(getchild(expression, 1)->type > getchild(expression, 0)->type)
-                        printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type)
+                    printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                else{
+                    if(getchild(expression, 1)->type == double_type){
+                        if(getchild(expression, 1)->type > getchild(expression, 0)->type)
+                            printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                    }
                 }
-            }
-        
-            if(getchild(expression, 0)->category != Identifier){
-                printf("Line %d, column %d: Lvalue required\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
-                //has_error = 1;
-            }
+            
+                if(getchild(expression, 0)->category != Identifier){
+                    printf("Line %d, column %d: Lvalue required\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
+                    //has_error = 1;
+                }
 
-            enum type type1 = getchild(expression, 0)->type;
-            expression->type = type1;
+                enum type type1 = getchild(expression, 0)->type;
+                expression->type = type1;
+            }
             break;
         case Add:
         case Sub:
@@ -257,21 +259,22 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
             
-            erros_bueda_estranhos2(expression);
+            if(!erros_bueda_estranhos2(expression)){
 
-            if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
-                expression->type = undef_type;
-                printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
-            }
-            else{
-                if(getchild(expression, 0)->type == void_type || getchild(expression, 1)->type == void_type){
+                if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
                     expression->type = undef_type;
                     printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
-                }else{
-                    if(getchild(expression, 0)->type >= getchild(expression, 1)->type)
-                        expression->type = getchild(expression, 0)->type;
-                    else
-                        expression->type = getchild(expression, 1)->type;
+                }
+                else{
+                    if(getchild(expression, 0)->type == void_type || getchild(expression, 1)->type == void_type){
+                        expression->type = undef_type;
+                        printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                    }else{
+                        if(getchild(expression, 0)->type >= getchild(expression, 1)->type)
+                            expression->type = getchild(expression, 0)->type;
+                        else
+                            expression->type = getchild(expression, 1)->type;
+                    }
                 }
             }
         
