@@ -231,6 +231,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             check_expression(getchild(expression, 1), table);
 
+            //erros_bueda_estranhos2(expression);
+
             if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type)
                 printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
             else{
@@ -501,6 +503,7 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
                 else
                     printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
             } else {
+
                 if(type == void_type)
                     printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
                 
@@ -573,9 +576,15 @@ int check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * lista
     int cnt = 0;
     
     while((ParamList = ParamList->next) != NULL){
-        if((getchild(ParamList->node, 0)->category == Void && ParamList->next) || (cnt && getchild(ParamList->node, 0)->category == Void)){      //Sempre que ha void deve dar erro a nao ser q seja um unico parametro void 
-            printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);  //int main(void) deve ser aceite, e int main(void, int) nao, e int main(int, void) tambem nao
+        if(getchild(ParamList->node, 0)->category == Void && getchild(ParamList->node, 1)){
+            printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);
             return 0;
+        }
+        else{
+            if((getchild(ParamList->node, 0)->category == Void && ParamList->next) || (cnt && getchild(ParamList->node, 0)->category == Void)){      //Sempre que ha void deve dar erro a nao ser q seja um unico parametro void 
+                printf("Line %d, column %d: Invalid use of void type in declaration\n", getchild(ParamList->node, 0)->line, getchild(ParamList->node, 0)->column);  //int main(void) deve ser aceite, e int main(void, int) nao, e int main(int, void) tambem nao
+                return 0;
+            }
         }
         cnt++;
     }
