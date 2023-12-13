@@ -52,12 +52,13 @@
 ./uccompiler -s < meta3/errors_funcdefinitions.uc | diff meta3/errors_funcdefinitions.out -
 ./uccompiler -s < meta3/expression.c | diff meta3/expression.out -
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out - 
-./uccompiler -s < meta3/funcVars.uc | diff meta3/funcVars.out -                 //O erro do Add é para ignorar
+./uccompiler -s < meta3/funcVars.uc | diff meta3/funcVars.out -                 
+./uccompiler -s < meta3/ftypes.uc | diff meta3/ftypes.out -
+./uccompiler -s < meta3/test_matic_3000.uc | diff meta3/test_matic_3000.out -
 
 ### A nao funcionar
 
-./uccompiler -s < meta3/ftypes.uc | diff meta3/ftypes.out -
-./uccompiler -s < meta3/test_matic_3000.uc | diff meta3/test_matic_3000.out -
+...
 
 ### Depressao
 

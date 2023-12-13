@@ -297,7 +297,7 @@ Expr: Expr ASSIGN Expr                                                      { $$
     | Expr GT Expr                                                          { $$ = newnode(Gt, NULL); addchild($$, $1); addchild($$, $3); Tracker($$, @2.first_line, @2.first_column); }
     | PLUS Expr        %prec NOT                                            { $$ = newnode(Plus, NULL); addchild($$, $2); Tracker($$, @1.first_line, @1.first_column); }
     | MINUS Expr       %prec NOT                                            { $$ = newnode(Minus, NULL); addchild($$, $2); Tracker($$, @1.first_line, @1.first_column); }
-    | NOT Expr                                                              { $$ = newnode(Not, NULL); addchild($$, $2); }
+    | NOT Expr                                                              { $$ = newnode(Not, NULL); addchild($$, $2); Tracker($$, @1.first_line, @1.first_column);}
     | IDENTIFIER LPAR RPAR                                                  { $$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); Tracker(getchild($$, 0), @1.first_line, @1.first_column); }
     | IDENTIFIER LPAR Aux_Expr RPAR                                         { $$ = newnode(Call, NULL); addchild($$, newnode(Identifier, $1)); addchild($$, $3); Tracker(getchild($$, 0), @1.first_line, @1.first_column); }
     | IDENTIFIER                                                            { $$ = newnode(Identifier, $1); Tracker($$, @1.first_line, @1.first_column); }
