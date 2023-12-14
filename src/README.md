@@ -54,9 +54,11 @@
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -                
 ./uccompiler -s < meta3/ftypes.uc | diff meta3/ftypes.out -
 ./uccompiler -s < meta3/test_matic_3000.uc | diff meta3/test_matic_3000.out -
+./uccompiler -s < meta3/funcVars.c | diff meta3/funcVars.out -
 
 ### A nao funcionar
-./uccompiler -s < meta3/funcVars.c | diff meta3/funcVars.out -
+
+...
 
 ### Depressao
 

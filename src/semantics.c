@@ -631,6 +631,23 @@ void check_funcbody(struct node* funcbody, struct symbol_list *table, enum type 
                 while((child = child->next) != NULL){
                     check_expression(child->node, table);
                 }
+                struct param_list *aux_params = NULL;
+                if(children->node->children->next->node->category == Identifier){
+                    if(search_symbol(symbol_table, children->node->children->next->node->token)){
+                        if((aux_params = search_symbol(symbol_table, children->node->children->next->node->token)->params_list) != NULL){
+                            printf("Line %d, column %d: Conflicting types (got %s", children->node->children->next->node->line, children->node->children->next->node->column, type_name(children->node->children->next->node->type));
+                            printf("(");
+                            while(aux_params){
+                                if(aux_params->next)
+                                    printf("%s,", type_name(aux_params->type));
+                                else
+                                    printf("%s), expected int)\n", type_name(aux_params->type));
+                                aux_params = aux_params->next;
+                            }
+                            break;
+                        }
+                    }
+                }
                 if(children->node->children->next->node->type == double_type)
                     printf("Line %d, column %d: Conflicting types (got %s, expected int)\n", children->node->children->next->node->line, children->node->children->next->node->column, type_name(children->node->children->next->node->type));
                 break;
