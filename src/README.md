@@ -57,8 +57,7 @@
 ./uccompiler -s < meta3/test_matic_3000.uc | diff meta3/test_matic_3000.out -
 
 ### A nao funcionar
-
-...
+./uccompiler -s < meta3/funcVars.c | diff meta3/funcVars.out -
 
 ### Depressao
 
