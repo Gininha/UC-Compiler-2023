@@ -811,7 +811,7 @@ int check_funcdeclatarion(struct node *func_dec, struct list_symbol_list * lista
     return 0;
 }
 
-void print_erros(struct node* node){
+int print_erros(struct node* node){
     struct node_list* children = getchild(node, 2)->children->next;
     struct param_list* aux = search_symbol(symbol_table, getchild(node, 1)->token)->params_list;
 
@@ -848,7 +848,9 @@ void print_erros(struct node* node){
         }
         printf(")");
         printf("\n");
+        return 1;
     }
+    return 0;
 }   
 
 // semantic analysis begins here, with the AST root node
@@ -893,22 +895,22 @@ void check_program(struct node *program) {
                                 check_function(child->node, new_table);
                             }
                         }
-                        
                     }else{
                         if(search_table(lista, getchild(child->node, 1)->token)->next){      // Se o return ainda nao existir a funçao ainda nao existe
                             //show_symbol_table(search_table(lista, getchild(child->node, 1)->token));
                             printf("Line %d, column %d: Symbol %s already defined\n", getchild(child->node, 1)->line, getchild(child->node, 1)->column, getchild(child->node, 1)->token);
 
                         }else{
-                            print_erros(child->node);
-                            erros_bueda_estranhos(getchild(child->node, 1), child->node);       
+                            if(!(print_erros(child->node)))
+                                erros_bueda_estranhos(getchild(child->node, 1), child->node);       
                             
                             // Check type and params equal 
                             if(search_table(lista, getchild(child->node, 1)->token)->type == category_type(getchild(child->node, 0)->category)){
-                                
+                                //printf("%s %s\n", type_name(search_table(lista, getchild(child->node, 1)->token)->type), type_name(category_type(getchild(child->node, 0)->category)));
                                 struct param_list* aux = search_symbol(symbol_table, getchild(child->node, 1)->token)->params_list;
                                 struct node_list* paramList = getchild(child->node, 2)->children->next; 
                                 //printf("%s\n",getchild(child->node, 1)->token);
+
                                 while(aux && paramList){
                                     //printf("%s %s\n", type_name(aux->type), type_name(category_type(getchild(paramList->node, 0)->category)));
                                     if(aux->type != category_type(getchild(paramList->node, 0)->category)){
@@ -922,8 +924,12 @@ void check_program(struct node *program) {
                                     flag_params = 1;
                                 if(paramList)
                                     flag_params = 1;
-                                if(!flag_params)
+
+                                if(!flag_params){
+                                    new_table = add_to_list_of_tables(lista, child->node);
                                     check_function(child->node, search_table(lista, getchild(child->node, 1)->token));
+                                }
+                                flag_params = 0;
                             }    
                         }
                     }
