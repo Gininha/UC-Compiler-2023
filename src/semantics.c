@@ -366,6 +366,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
                 if(search_symbol(symbol_table, getchild(expression, 0)->token) != NULL){
                     if((aux = search_symbol(symbol_table, getchild(expression, 0)->token)->params_list) != NULL){
                         printf("Line %d, column %d: Conflicting types (got %s(", getchild(expression, 0)->line, getchild(expression, 0)->column, type_name(search_symbol(symbol_table, getchild(expression, 0)->token)->type));
+                        getchild(expression, 0)->params_list = aux;
                         while(aux){
                             if(aux->next)
                                 printf("%s,", type_name(aux->type));
@@ -385,6 +386,8 @@ void check_expression(struct node *expression, struct symbol_list *table){
             if(!erros_bueda_estranhos2(expression, table)){
                 if(getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type){
                     printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                    if(getchild(expression, 0)->type == undef_type && getchild(expression, 0)->category == Identifier)
+                        expression->type = undef_type;
                 }
             }
 
@@ -403,8 +406,12 @@ void check_expression(struct node *expression, struct symbol_list *table){
                         if(getchild(expression, 1)->type > getchild(expression, 0)->type)
                             printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
                     }
+
+                    if(getchild(expression, 1)->type == void_type)
+                        printf("Line %d, column %d: Operator = cannot be applied to types %s, %s\n", expression->line, expression->column, type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
+                    
                 }
-            
+                
                 if(getchild(expression, 0)->category != Identifier){
                     printf("Line %d, column %d: Lvalue required\n", getchild(expression, 0)->line, getchild(expression, 0)->column);
                     expression->type = getchild(expression, 0)->type;
@@ -459,7 +466,7 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 1), table);
 
             if(!erros_bueda_estranhos2(expression, table)){
-                if (getchild(expression, 0)->type == double_type || getchild(expression, 1)->type == double_type || getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type) {
+                if (getchild(expression, 0)->type == double_type || getchild(expression, 1)->type == double_type || getchild(expression, 0)->type == undef_type || getchild(expression, 1)->type == undef_type || getchild(expression, 0)->type == void_type || getchild(expression, 1)->type == void_type) {
                     printf("Line %d, column %d: Operator %s cannot be applied to types %s, %s\n", expression->line, expression->column, symbol_type(expression->category), type_name(getchild(expression, 0)->type), type_name(getchild(expression, 1)->type));
                 }
             }
@@ -492,8 +499,10 @@ void check_expression(struct node *expression, struct symbol_list *table){
             check_expression(getchild(expression, 0), table);
             expression->type = integer_type;
 
-            if(getchild(expression, 0)->type == void_type || getchild(expression, 0)->type == undef_type || getchild(expression, 0)->type == double_type)
+            if(getchild(expression, 0)->type == void_type || getchild(expression, 0)->type == undef_type || getchild(expression, 0)->type == double_type){
                 print_err_operator(expression);
+                break;
+            }
             if(search_symbol(symbol_table, getchild(expression, 0)->token))
                 if(search_symbol(symbol_table, getchild(expression, 0)->token)->params_list)
                     print_err_operator(expression);
@@ -708,12 +717,16 @@ void check_declaration(struct node *declaration, struct symbol_list *table){
                     
                     insert_symbol(table, id->token, type, id, 0); 
                 }
-                else
+                else{
                     printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
+                    return;
+                }
             } else {
 
-                if(type == void_type)
+                if(type == void_type){
                     printf("Line %d, column %d: Invalid use of void type in declaration\n", id->line, id->column);
+                    return;
+                }
                 
                 if(table != symbol_table)       //Aparentemente so da erro se forem variaveis declaradas dentro da funçao, se forem globais nao ha problema
                     printf("Line %d, column %d: Symbol %s already defined\n", id->line, id->column, id->token);

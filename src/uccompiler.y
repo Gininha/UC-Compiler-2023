@@ -265,7 +265,7 @@ Statement: Expr SEMI                                                        { $$
                                                                                 }
                                                                             }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); addchild($$, newnode(Null, NULL)); Tracker(getchild($$, 0), @1.first_line, @1.first_column); }
-         | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2); }
+         | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2); Tracker(getchild($$, 0), @2.first_line, @2.first_column);}
          | LBRACE error RBRACE                                              { $$ = newnode(Null, NULL); has_error = 1; }
          ;
 

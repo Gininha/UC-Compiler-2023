@@ -55,6 +55,10 @@
 ./uccompiler -s < meta3/ftypes.uc | diff meta3/ftypes.out -
 ./uccompiler -s < meta3/test_matic_3000.uc | diff meta3/test_matic_3000.out -
 ./uccompiler -s < meta3/funcVars.c | diff meta3/funcVars.out -
+./uccompiler -s < meta3/operations.uc | diff meta3/operations.out -
+./uccompiler -s < meta3/test.uc | diff meta3/test.out -
+./uccompiler -s < meta3/tudo.uc | diff meta3/tudo.out -
+./uccompiler -s < meta3/r_test1.uc | diff meta3/r_test1.out -
 
 ### A nao funcionar
 
