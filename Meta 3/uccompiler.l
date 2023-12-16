@@ -5,7 +5,6 @@
 %{
 #include "ast.h"
 #include "semantics.h"
-#include "codegen.h"
 #include "y.tab.h"
 
 #include <ctype.h>
@@ -22,7 +21,6 @@ void yyerror(char *);
 bool l = 0;
 bool y = 0;
 bool s = 0;
-bool g = 0;
 
 int line = 1, column = 1, y_line = -1, y_column = -1;
 int line_comm, column_comm;
@@ -135,7 +133,6 @@ int main(int argc, char *argv[]) {
         l = 0;
         y = 1;
         s = 0;
-        g = 1;
         print_tree = false;
         yyparse();
         break;
@@ -168,13 +165,7 @@ int main(int argc, char *argv[]) {
         break;
     }
 
-    if(g){
-        if(!has_error){
-            check_program(program);
-            if(!has_error)
-                codegen_program(program);
-        }
-    }else{
+   
         if (s && !has_error) {
             check_program(program);
             show(program, 0);
@@ -183,7 +174,7 @@ int main(int argc, char *argv[]) {
                 show(program, 0);
             }
         }
-    }
+    
 
     Remove_tree(program);
 

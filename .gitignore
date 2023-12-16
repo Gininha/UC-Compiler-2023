@@ -61,6 +61,11 @@ y.tab.h
 y.tab.c
 meta2
 meta3
+meta4
+first.ll
+example.ll
+first2.ll
+
 testes.sh
 src/uccompiler
 src/output.txt
