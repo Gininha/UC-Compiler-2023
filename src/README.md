@@ -69,3 +69,14 @@
 ./uccompiler -s < meta3/erros.uc | diff meta3/erros.out -       // Este finalmente funciona aint no way!
 
 
+## Meta 4
+
+### A funcionar
+
+lli hello.ll | diff meta4/first.out -
+lli hello.ll | diff meta4/hello.out -
+lli hello.ll | diff meta4/sierpinski.out -
+
+## A nao funcionar
+
+lli hello.ll | diff meta4/essential.out -

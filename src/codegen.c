@@ -95,13 +95,13 @@ int codegen_ifthenelse(struct node *ifthenelse) {
 }
 
 int codegen_while(struct node *while_node) {
-    int label_id = temporary++;
+    int label_id = temporary;
     
     // Loop condition
     printf("  br label %%L%d\n", label_id); 
     printf("L%d:\n", label_id);
-    int condition_result = codegen_expression(getchild(while_node, 0));
 
+    int condition_result = codegen_expression(getchild(while_node, 0));
     printf("  br i1 %%%d, label %%L%dBody, label %%L%dEnd\n", condition_result, label_id, label_id);
 
     // Loop body
@@ -135,11 +135,16 @@ int codegen_declaration(struct node *declaration) {
 
     // Code generation for initializing with a constant value (if provided)
     if (value_node != NULL) {
-        int value = value_node->token[1];
+        char char_value = value_node->token[1];
+
+        if (char_value == '\\' && value_node->token[2] == 'n') {
+            char_value = '\n';
+        }
+
         if (type_node->category == Char) {
-            printf("  store %s %d, %s* %%%s\n", llvm_type, value, llvm_type, identifier_node->token);
+            printf("  store %s %d, %s* %%%s\n", llvm_type, char_value, llvm_type, identifier_node->token);
         } else {
-            printf("  store %s %d, %s* %%%s\n", llvm_type, value, llvm_type, identifier_node->token);
+            printf("  store %s %d, %s* %%%s\n", llvm_type, char_value, llvm_type, identifier_node->token);
         }
     }
 
@@ -161,8 +166,50 @@ int codegen_return(struct node *return_node) {
 int codegen_le(struct node *le_node) {
     int e1 = codegen_expression(getchild(le_node, 0));
     int e2 = codegen_expression(getchild(le_node, 1));
-    printf("  %%%d = load i32, i32* %%%d\n", temporary++, e2);
-    printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary, e1, temporary-1);
+    //printf("  %%%d = load i32, i32* %%%d\n", temporary++, e2);
+    printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_gt(struct node *gt_node) {
+    int e1 = codegen_expression(getchild(gt_node, 0));
+    int e2 = codegen_expression(getchild(gt_node, 1));
+    printf("  %%%d = icmp sgt i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_lt(struct node *lt_node) {
+    int e1 = codegen_expression(getchild(lt_node, 0));
+    int e2 = codegen_expression(getchild(lt_node, 1));
+    printf("  %%%d = icmp slt i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_ge(struct node *ge_node) {
+    int e1 = codegen_expression(getchild(ge_node, 0));
+    int e2 = codegen_expression(getchild(ge_node, 1));
+    printf("  %%%d = icmp sge i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_bitwise_and(struct node *and_node) {
+    int e1 = codegen_expression(getchild(and_node, 0));
+    int e2 = codegen_expression(getchild(and_node, 1));
+    printf("  %%%d = and i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_bitwise_xor(struct node *xor_node) {
+    int e1 = codegen_expression(getchild(xor_node, 0));
+    int e2 = codegen_expression(getchild(xor_node, 1));
+    printf("  %%%d = xor i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_bitwise_or(struct node *or_node) {
+    int e1 = codegen_expression(getchild(or_node, 0));
+    int e2 = codegen_expression(getchild(or_node, 1));
+    printf("  %%%d = or i32 %%%d, %%%d\n", temporary, e1, e2);
     return temporary++;
 }
 
@@ -181,12 +228,17 @@ int codegen_chrlit(struct node *chrlit_node) {
     // Assuming the character literal is represented as 'Z'
     char char_value = chrlit_node->token[1]; // Assuming the token format is 'Z'
 
+    if (char_value == '\\' && chrlit_node->token[2] == 'n') {
+        char_value = '\n';
+    }
+
     // Determine the LLVM IR type for the character literal
     const char *llvm_type = "i32";
 
     // Code generation for the character literal
-    printf("  %%%d = alloca %s\n", temporary, llvm_type);
-    printf("  store %s %d, %s* %%%d\n", llvm_type, char_value, llvm_type, temporary);
+    printf("  %%%d = alloca %s\n", temporary++, llvm_type);
+    printf("  store %s %d, %s* %%%d\n", llvm_type, char_value, llvm_type, temporary-1);
+    printf("  %%%d = load i32, i32* %%%d\n", temporary, temporary-1);
 
     return temporary++;
 }
@@ -248,6 +300,24 @@ int codegen_expression(struct node *expression) {
         case Le:
             tmp = codegen_le(expression);
             break;
+        case Lt:
+            tmp = codegen_lt(expression);
+            break;
+        case Gt:
+            tmp = codegen_gt(expression);
+            break;
+        case Ge:
+            tmp = codegen_ge(expression);
+            break;
+        case BitWiseAnd:
+            tmp = codegen_bitwise_and(expression);
+            break;
+        case BitWiseOr:
+            tmp = codegen_bitwise_or(expression);
+            break;
+        case BitWiseXor:
+            tmp = codegen_bitwise_xor(expression);
+            break;
         case Store:
             tmp = codegen_store(expression);
             break;
@@ -258,12 +328,16 @@ int codegen_expression(struct node *expression) {
     return tmp;
 }
 
-void codegen_funcbody(struct node *funcbody){
+int codegen_funcbody(struct node *funcbody){
     struct node_list *children = funcbody->children;
 
     while((children = children->next) != NULL){
         codegen_expression(children->node);
+        if(children->node->category == Return)
+            return 1;
     }
+
+    return 0;
 }
 
 void codegen_parameters(struct node *parameters) {
@@ -285,11 +359,15 @@ void codegen_parameters(struct node *parameters) {
 void codegen_function(struct node *function) {
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     //printf("%s\n", category_array[function])
-    temporary = 0;
+    int flag = 0;
+    temporary = 1;
+
     printf("define i32 @_%s(", getchild(function, 1)->token);
     codegen_parameters(getchild(function, 2));
     printf(") {\n");
-    codegen_funcbody(getchild(function, 3));      
+    flag = codegen_funcbody(getchild(function, 3));
+    if(!flag)
+        printf("  ret i32 0\n");
     printf("}\n\n");
 }
 
