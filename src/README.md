@@ -76,7 +76,6 @@
 lli hello.ll | diff meta4/first.out -
 lli hello.ll | diff meta4/hello.out -
 lli hello.ll | diff meta4/sierpinski.out -
+lli hello.ll | diff meta4/essential.out -
 
 ## A nao funcionar
-
-lli hello.ll | diff meta4/essential.out -

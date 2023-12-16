@@ -72,7 +72,10 @@ int codegen_decimal(struct node *decimal) {
 }
 
 int codegen_identifier(struct node *identifier) {
-    printf("  %%%d = load i32, i32* %%%s\n", temporary, identifier->token);
+    if(search_symbol(symbol_table, identifier->token))          //Variavel global
+        printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
+    else
+        printf("  %%%d = load i32, i32* %%%s\n", temporary, identifier->token);
     return temporary++;
 }
 
@@ -186,7 +189,6 @@ int codegen_return(struct node *return_node) {
 int codegen_le(struct node *le_node) {
     int e1 = codegen_expression(getchild(le_node, 0));
     int e2 = codegen_expression(getchild(le_node, 1));
-    //printf("  %%%d = load i32, i32* %%%d\n", temporary++, e2);
     printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary, e1, e2);
     return temporary++;
 }
@@ -230,6 +232,39 @@ int codegen_bitwise_or(struct node *or_node) {
     int e1 = codegen_expression(getchild(or_node, 0));
     int e2 = codegen_expression(getchild(or_node, 1));
     printf("  %%%d = or i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_ne(struct node *ne_node) {
+    int e1 = codegen_expression(getchild(ne_node, 0));
+    int e2 = codegen_expression(getchild(ne_node, 1));
+    printf("  %%%d = icmp ne i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_eq(struct node *eq_node) {
+    int e1 = codegen_expression(getchild(eq_node, 0));
+    int e2 = codegen_expression(getchild(eq_node, 1));
+    printf("  %%%d = icmp eq i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+int codegen_minus(struct node *minus){
+    int e1 = codegen_expression(getchild(minus, 0));
+    printf("  %%%d  = sub i32 0, %%%d\n", temporary, e1);
+
+    return temporary++;
+}
+
+int codegen_plus(struct node *plus_node) {
+    int e1 = codegen_expression(getchild(plus_node, 0));
+    printf("  %%%d = add i32 0, %%%d\n", temporary, e1);
+    return temporary++;
+}
+
+int codegen_not(struct node *not_node) {
+    int e1 = codegen_expression(getchild(not_node, 0));
+    printf("  %%%d = icmp eq i32 %%%d, 0\n", temporary, e1);
     return temporary++;
 }
 
@@ -341,8 +376,24 @@ int codegen_expression(struct node *expression) {
         case Store:
             tmp = codegen_store(expression);
             break;
+        case Minus:
+            tmp = codegen_minus(expression);
+            break;
+        case Eq:
+            tmp = codegen_eq(expression);
+            break;
+        case Ne:
+            tmp = codegen_ne(expression);
+            break;
+        case Not:
+            tmp = codegen_not(expression);
+            break;
+        case Plus:
+            tmp = codegen_plus(expression);
+            break;
         default:
-            printf("\n-->%s\n", category_array[expression->category]);
+            if(expression->category != Null)
+                printf("\n-->%s\n", category_array[expression->category]);
             break;
     }
     return tmp;
