@@ -9,6 +9,30 @@ int temporary;
 
 extern struct symbol_list *symbol_table;
 
+int get_value(char *string) {
+    int char_value = 0;
+    char aux[7] = "\\";
+    int pos = 2;
+
+    if (string[1] == '\\') {
+        if (string[2] == 'n') {
+            char_value = '\n';
+        } else {
+            while (string[pos] != '\'') {
+                aux[pos - 2] = string[pos];
+                pos++;
+            }
+            aux[pos - 2] = '\0';
+            
+            sscanf(aux, "%o", &char_value);
+        }
+    } else {
+        char_value = string[1];
+    }
+
+    return char_value;
+}
+
 int codegen_add(struct node *add) {
     int e1 = codegen_expression(getchild(add, 0));
     int e2 = codegen_expression(getchild(add, 1));
@@ -121,7 +145,7 @@ int codegen_declaration(struct node *declaration) {
     struct node *type_node = getchild(declaration, 0);
     struct node *identifier_node = getchild(declaration, 1);
     struct node *value_node = getchild(declaration, 2);
-
+    char char_value;
     // Map UC data types to LLVM IR types
     const char *llvm_type;
     if (type_node->category == Int || type_node->category == Short || type_node->category == Char) {
@@ -135,15 +159,11 @@ int codegen_declaration(struct node *declaration) {
 
     // Code generation for initializing with a constant value (if provided)
     if (value_node != NULL) {
-        char char_value = value_node->token[1];
 
-        if (char_value == '\\' && value_node->token[2] == 'n') {
-            char_value = '\n';
-        }
-
-        if (type_node->category == Char) {
-            printf("  store %s %d, %s* %%%s\n", llvm_type, char_value, llvm_type, identifier_node->token);
+        if (type_node->category == Double) {
+            printf("  store %s %s, %s* %%%s\n", llvm_type, value_node->token, llvm_type, identifier_node->token);
         } else {
+            char_value = get_value(value_node->token);
             printf("  store %s %d, %s* %%%s\n", llvm_type, char_value, llvm_type, identifier_node->token);
         }
     }
@@ -371,6 +391,35 @@ void codegen_function(struct node *function) {
     printf("}\n\n");
 }
 
+void codegen_func_dec(struct node *func_dec){
+    printf("Func_dec\n");
+}
+
+void codegen_global_dec(struct node *declaration){
+    struct node *type_node = getchild(declaration, 0);
+    struct node *identifier_node = getchild(declaration, 1);
+    struct node *value_node = getchild(declaration, 2);
+    int char_value;
+
+    // Map UC data types to LLVM IR types
+    const char *llvm_type;
+    if (type_node->category == Int || type_node->category == Short || type_node->category == Char) {
+        llvm_type = "i32";
+    } else if(type_node->category == Double) {
+        llvm_type = "double";
+    }
+
+    if (value_node != NULL) {
+        if(type_node->category != Double){
+            char_value = get_value(value_node->token);
+            printf("@%s = global %s %d\n", identifier_node->token, llvm_type, char_value);
+        }else{
+            printf("@%s = global %s %s\n", identifier_node->token, llvm_type, value_node->token);
+        }
+        
+    }
+}
+
 // code generation begins here, with the AST root node
 void codegen_program(struct node *program) {
     //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
@@ -382,9 +431,15 @@ void codegen_program(struct node *program) {
 
     // generate the code for each function
     struct node_list *function = program->children;
-    while((function = function->next) != NULL)
-        codegen_function(function->node);
-
+    while((function = function->next) != NULL){
+        if(function->node->category == FuncDefinition)
+            codegen_function(function->node);
+        if(function->node->category == FuncDeclaration)
+            codegen_func_dec(function->node);
+        if(function->node->category == Declaration)
+            codegen_global_dec(function->node);
+    }
+    
     // generate the entry point which calls main(integer) if it exists
     struct symbol_list *entry = search_symbol(symbol_table, "main");
 
