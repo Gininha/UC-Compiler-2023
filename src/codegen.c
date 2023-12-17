@@ -151,7 +151,8 @@ int codegen_while(struct node *while_node) {
     printf("L%d:\n", label_id);
 
     int condition_result = codegen_expression(getchild(while_node, 0));
-    printf("  br i1 %%%d, label %%L%dBody, label %%L%dEnd\n", condition_result, label_id, label_id);
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, condition_result);
+    printf("  br i1 %%%d, label %%L%dBody, label %%L%dEnd\n", temporary-1, label_id, label_id);
 
     // Loop body
     printf("L%dBody:\n", label_id);
@@ -206,28 +207,32 @@ int codegen_return(struct node *return_node) {
 int codegen_le(struct node *le_node) {
     int e1 = codegen_expression(getchild(le_node, 0));
     int e2 = codegen_expression(getchild(le_node, 1));
-    printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
 int codegen_gt(struct node *gt_node) {
     int e1 = codegen_expression(getchild(gt_node, 0));
     int e2 = codegen_expression(getchild(gt_node, 1));
-    printf("  %%%d = icmp sgt i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp sgt i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
 int codegen_lt(struct node *lt_node) {
     int e1 = codegen_expression(getchild(lt_node, 0));
     int e2 = codegen_expression(getchild(lt_node, 1));
-    printf("  %%%d = icmp slt i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp slt i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
 int codegen_ge(struct node *ge_node) {
     int e1 = codegen_expression(getchild(ge_node, 0));
     int e2 = codegen_expression(getchild(ge_node, 1));
-    printf("  %%%d = icmp sge i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp sge i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
@@ -255,14 +260,16 @@ int codegen_bitwise_or(struct node *or_node) {
 int codegen_ne(struct node *ne_node) {
     int e1 = codegen_expression(getchild(ne_node, 0));
     int e2 = codegen_expression(getchild(ne_node, 1));
-    printf("  %%%d = icmp ne i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp ne i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
 int codegen_eq(struct node *eq_node) {
     int e1 = codegen_expression(getchild(eq_node, 0));
     int e2 = codegen_expression(getchild(eq_node, 1));
-    printf("  %%%d = icmp eq i32 %%%d, %%%d\n", temporary, e1, e2);
+    printf("  %%%d = icmp eq i32 %%%d, %%%d\n", temporary++, e1, e2);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
