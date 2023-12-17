@@ -93,7 +93,7 @@ int codegen_natural(struct node *natural) {
 }
 
 int codegen_decimal(struct node *decimal) {
-    printf("  %%%d = fadd double %s, 0.0\n", temporary, decimal->token);
+    printf("  %%%d = fadd double %lf, 0.0\n", temporary, atof(decimal->token));
     return temporary++;
 }
 
