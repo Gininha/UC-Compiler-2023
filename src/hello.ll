@@ -1,5 +1,46 @@
 declare i32 @getchar()
 declare i32 @putchar(i32)
+@kek = global double 0.0
+@kek_1 = global double 1.2
+@kappa = global i32 53
+@u_know = global i32 112
+@w = global i32 48
+define void @_funcao_com_globais() {
+  %1 = load i32, i32* @w
+  %2 = tail call i32 @putchar(i32 %1)
+  %3 = load i32, i32* @u_know
+  %4 = tail call i32 @putchar(i32 %3)
+  %5 = load i32, i32* @kappa
+  %6 = tail call i32 @putchar(i32 %5)
+  %_res_1 = alloca i32
+  %7 = load i32, i32* @kappa
+  %8 = load i32, i32* @w
+  %9 = add i32 %7, %8
+  store i32 %9, i32* %_res_1
+  %_res_2 = alloca i32
+  %10 = load i32, i32* @u_know
+  %11 = load i32, i32* @w
+  %12 = add i32 %10, %11
+  store i32 %12, i32* %_res_2
+  %_res_3 = alloca i32
+  %13 = load i32, i32* @kappa
+  %14 = load i32, i32* @u_know
+  %15 = add i32 %13, %14
+  store i32 %15, i32* %_res_3
+  %16 = load i32, i32* %_res_1
+  %17 = tail call i32 @putchar(i32 %16)
+  %18 = load i32, i32* %_res_2
+  %19 = tail call i32 @putchar(i32 %18)
+  %20 = load i32, i32* %_res_3
+  %21 = tail call i32 @putchar(i32 %20)
+  %_ala_u_akbar = alloca double
+  %22 = load i32, i32* @kek
+  %23 = load i32, i32* @kek_1
+  %24 = fadd double %22, %23
+  store double %24, double* %_ala_u_akbar
+  ret void
+}
+
 define double @_main() {
   %_a = alloca double
   %1 = add i32 0, 0
@@ -55,10 +96,23 @@ L19End:
   br label %L8end
 L8end:
   %29 = load i32, i32* %8
+  %30 = add i32 10, 0
+  %31 = tail call i32 @putchar(i32 %30)
+  tail call void @_funcao_com_globais()
   ret double 1.0
 }
 
 define double @main() {
-  %1 = call double @_main()
+  %1 = add i32 0, 0
+  store double %1, double* @kek
+  %2 = fadd double 1.2, 0.0
+  store double %2, double* @kek_1
+  %3 = add i32 75, 0
+  store i32 %3, i32* @kappa
+  %4 = add i32 112, 0
+  store i32 %4, i32* @u_know
+  %5 = add i32 40, 0
+  store i32 %5, i32* @w
+  %6 = call double @_main()
   ret double %1
 }
