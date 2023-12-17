@@ -717,7 +717,7 @@ void codegen_global_aux(struct node *declaration) {
 
     if (value_node != NULL) {
         if(value_node->type != double_type && type_node->category == Double){
-            printf("  %%%d = fadd double %s.0, 0.0\n", temporary++, value_node->token);
+            printf("  %%%d = fadd double %lf, 0.0\n", temporary++, atof(value_node->token));
             teste = temporary-1;
         }else
             teste = codegen_expression(value_node);
