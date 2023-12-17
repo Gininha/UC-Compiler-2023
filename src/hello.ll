@@ -4,7 +4,7 @@ define void @_main() {
   ret void
 }
 
-define i32 @main() {
-  %1 = call i32 @_main()
-  ret i32 %1
+define void @main() {
+  call void @_main()
+  ret void
 }

@@ -598,8 +598,12 @@ void codegen_program(struct node *program) {
     if (entry != NULL && entry->node->category == FuncDefinition) {
         if(entry->type == double_type)
             printf("define double @main() {\n");
-        else
-            printf("define i32 @main() {\n");
+        else{
+            if(entry->type == void_type)
+                printf("define void @main() {\n");
+            else
+                printf("define i32 @main() {\n");
+        }
 
         function = program->children;
         while ((function = function->next) != NULL) {
@@ -611,9 +615,15 @@ void codegen_program(struct node *program) {
             printf("  ret double %%%d\n"
                 "}\n", temporary);
         }else{
-            printf("  %%%d = call i32 @_main()\n", temporary);
-            printf("  ret i32 %%%d\n"
-                "}\n", temporary);
+            if(entry->type == void_type){
+                printf("  call void @_main()\n");
+                printf("  ret void\n"
+                    "}\n");
+            }else{
+                printf("  %%%d = call i32 @_main()\n", temporary);
+                printf("  ret i32 %%%d\n"
+                    "}\n", temporary);
+            }
         }
     }
 }
