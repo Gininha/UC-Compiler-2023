@@ -6,7 +6,6 @@
 #include <string.h>
 
 int temporary;
-struct node *aux_func_parameters;
 
 extern struct symbol_list *symbol_table;
 
@@ -75,26 +74,11 @@ int codegen_decimal(struct node *decimal) {
 }
 
 int codegen_identifier(struct node *identifier) {
-    struct node *parameter;
-    int curr = 0;
-    int flag = 0;
-    while ((parameter = getchild(aux_func_parameters, curr++)) != NULL) {
-        if (getchild(parameter, 0)->category != Void) {
-            if (strcmp(getchild(parameter, 1)->token, identifier->token) == 0) {
-                flag = 1;
-                break;
-            }
-        }
-    }
 
-    if (flag) {
-        printf("  %%%d = add i32 %%%s, 0\n", temporary, identifier->token);
-    } else {
-        if (search_symbol(symbol_table, identifier->token)) // Variavel global
-            printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
-        else
-            printf("  %%%d = load i32, i32* %%%s\n", temporary, identifier->token);
-    }
+    if (search_symbol(symbol_table, identifier->token)) // Variavel global
+        printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
+    else
+        printf("  %%%d = load i32, i32* %%_%s\n", temporary, identifier->token);
 
     return temporary++;
 }
@@ -190,11 +174,11 @@ int codegen_declaration(struct node *declaration) {
     if (value_node != NULL) {
 
         // Code generation for variable declaration
-        printf("  %%%s = alloca %s\n", identifier_node->token, llvm_type);
+        printf("  %%_%s = alloca %s\n", identifier_node->token, llvm_type);
 
         int teste = codegen_expression(value_node);
 
-        printf("  store %s %%%d, %s* %%%s\n", llvm_type, teste, llvm_type, identifier_node->token);
+        printf("  store %s %%%d, %s* %%_%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 
     return temporary;
@@ -300,26 +284,10 @@ int codegen_store(struct node *store_node) {
 
     int value_tmp = codegen_expression(value);
 
-    struct node *parameter;
-    int curr = 0;
-    int flag = 0;
-    while ((parameter = getchild(aux_func_parameters, curr++)) != NULL) {
-        if (getchild(parameter, 0)->category != Void) {
-            if (strcmp(getchild(parameter, 1)->token, target->token) == 0) {
-                flag = 1;
-                break;
-            }
-        }
-    }
-
-    if (flag) {
-        printf("  %%%s = add i32 %%%d, 0\n", target->token, value_tmp);
-    } else {
-        if (search_symbol(symbol_table, target->token)) // Variavel global
-            printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
-        else
-            printf("  store i32 %%%d, i32* %%%s\n", value_tmp, target->token);
-    }
+    if (search_symbol(symbol_table, target->token)) // Variavel global
+        printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
+    else
+        printf("  store i32 %%%d, i32* %%_%s\n", value_tmp, target->token);
 
     return temporary;
 }
@@ -455,7 +423,7 @@ void codegen_parameters(struct node *parameters) {
             if (curr > 1)
                 printf(", ");
             if (getchild(parameter, 1))
-                printf("i32 %%%s", getchild(parameter, 1)->token);
+                printf("i32 %%_%s", getchild(parameter, 1)->token);
             else
                 printf("i32");
         }
@@ -469,8 +437,7 @@ void codegen_function(struct node *function) {
     temporary = 1;
 
     printf("define i32 @_%s(", getchild(function, 1)->token);
-    aux_func_parameters = getchild(function, 2);
-    codegen_parameters(aux_func_parameters);
+    codegen_parameters(getchild(function, 2));
     printf(") {\n");
     flag = codegen_funcbody(getchild(function, 3));
     if (!flag)

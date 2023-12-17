@@ -61,8 +61,10 @@ int main(void) {
     b = teste_c(a, 10);
 
     somaarg(3);
-    
+
     putchar(sus(50));
+
+    b = 45;
 
     putchar(b);
 }
