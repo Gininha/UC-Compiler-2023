@@ -150,9 +150,15 @@ int codegen_ifthenelse(struct node *ifthenelse) {
         } else
             printf("  br label %%L%dend\n", label_id);
     }else{
-        e1 = codegen_expression(getchild(getchild(ifthenelse, 1), 0));
-        printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
-        printf("  br label %%L%dend\n", label_id);
+        if(getchild(getchild(ifthenelse, 1), 0))
+            e1 = codegen_expression(getchild(getchild(ifthenelse, 1), 0));
+        else
+            e1 = -1;
+        if (e1 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
     }
 
     printf("L%delse:\n", label_id);
@@ -164,9 +170,16 @@ int codegen_ifthenelse(struct node *ifthenelse) {
         } else
             printf("  br label %%L%dend\n", label_id);
     }else{
-        e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
-        printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
-        printf("  br label %%L%dend\n", label_id);
+        if(getchild(getchild(ifthenelse, 2), 0))
+            e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
+        else
+            e2 = -1;
+
+        if (e2 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
     }
 
     printf("L%dend:\n", label_id);
