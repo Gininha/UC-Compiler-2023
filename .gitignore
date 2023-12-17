@@ -69,3 +69,4 @@ testes.sh
 src/uccompiler
 src/output.txt
 *.ll
+*.ll
