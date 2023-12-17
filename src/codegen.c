@@ -699,7 +699,7 @@ void codegen_function(struct node *function) {
 }
 
 void codegen_func_dec(struct node *func_dec) {
-    printf("Func_dec\n");
+
 }
 
 void codegen_global_aux(struct node *declaration) {
@@ -716,8 +716,11 @@ void codegen_global_aux(struct node *declaration) {
     }
 
     if (value_node != NULL) {
-
-        teste = codegen_expression(value_node);
+        if(value_node->type != double_type && type_node->category == Double){
+            printf("  %%%d = fadd double %s.0, 0.0\n", temporary++, value_node->token);
+            teste = temporary-1;
+        }else
+            teste = codegen_expression(value_node);
         printf("  store %s %%%d, %s* @%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 }
