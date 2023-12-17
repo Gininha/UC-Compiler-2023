@@ -13,21 +13,22 @@ int get_value(char *string) {
     int char_value = 0;
     char aux[7] = "\\";
     int pos = 2;
-
-    if (string[1] == '\\') {
-        if (string[2] == 'n') {
-            char_value = '\n';
-        } else {
-            while (string[pos] != '\'') {
-                aux[pos - 2] = string[pos];
-                pos++;
+    if(string){
+        if (string[1] == '\\') {
+            if (string[2] == 'n') {
+                char_value = '\n';
+            } else {
+                while (string[pos] != '\'') {
+                    aux[pos - 2] = string[pos];
+                    pos++;
+                }
+                aux[pos - 2] = '\0';
+                
+                sscanf(aux, "%o", &char_value);
             }
-            aux[pos - 2] = '\0';
-            
-            sscanf(aux, "%o", &char_value);
+        } else {
+            char_value = string[1];
         }
-    } else {
-        char_value = string[1];
     }
 
     return char_value;
@@ -106,16 +107,26 @@ int codegen_ifthenelse(struct node *ifthenelse) {
     int label_id = temporary++;
     printf("  %%%d = alloca i32\n", label_id);
     int e = codegen_expression(getchild(ifthenelse, 0));
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary, e);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary++, e);
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary, e+1);
     printf("  br i1 %%%d, label %%L%dthen, label %%L%delse\n", temporary++, label_id, label_id);
+    
     printf("L%dthen:\n", label_id);
     int e1 = codegen_expression(getchild(ifthenelse, 1));
-    printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
-    printf("  br label %%L%dend\n", label_id);
+    if(e1 != -1){
+        printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
+        printf("  br label %%L%dend\n", label_id);
+    }else
+        printf("  br label %%L%dend\n", label_id);
+    
     printf("L%delse:\n", label_id);
     int e2 = codegen_expression(getchild(ifthenelse, 2));
-    printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
-    printf("  br label %%L%dend\n", label_id);  
+    if(e2 != -1){
+        printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
+        printf("  br label %%L%dend\n", label_id);
+    }else
+        printf("  br label %%L%dend\n", label_id);
+
     printf("L%dend:\n", label_id);
     printf("  %%%d = load i32, i32* %%%d\n", temporary, label_id);
     return temporary++;
@@ -148,7 +159,6 @@ int codegen_declaration(struct node *declaration) {
     struct node *type_node = getchild(declaration, 0);
     struct node *identifier_node = getchild(declaration, 1);
     struct node *value_node = getchild(declaration, 2);
-    char char_value;
     // Map UC data types to LLVM IR types
     const char *llvm_type;
     if (type_node->category == Int || type_node->category == Short || type_node->category == Char) {
@@ -163,12 +173,9 @@ int codegen_declaration(struct node *declaration) {
     // Code generation for initializing with a constant value (if provided)
     if (value_node != NULL) {
 
-        if (type_node->category == Double) {
-            printf("  store %s %s, %s* %%%s\n", llvm_type, value_node->token, llvm_type, identifier_node->token);
-        } else {
-            char_value = get_value(value_node->token);
-            printf("  store %s %d, %s* %%%s\n", llvm_type, char_value, llvm_type, identifier_node->token);
-        }
+        int teste = codegen_expression(value_node);
+
+        printf("  store %s %%%d, %s* %%%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 
     return temporary;
@@ -281,11 +288,8 @@ int codegen_store(struct node *store_node) {
 
 int codegen_chrlit(struct node *chrlit_node) {
     // Assuming the character literal is represented as 'Z'
-    char char_value = chrlit_node->token[1]; // Assuming the token format is 'Z'
 
-    if (char_value == '\\' && chrlit_node->token[2] == 'n') {
-        char_value = '\n';
-    }
+    char char_value = get_value(chrlit_node->token);
 
     // Determine the LLVM IR type for the character literal
     const char *llvm_type = "i32";
