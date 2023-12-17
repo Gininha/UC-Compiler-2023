@@ -170,7 +170,7 @@ int codegen_ifthenelse(struct node *ifthenelse) {
         }
         printf("  br label %%L%dend\n", label_id);
     } else {
-        codegen_expression(getchild(ifthenelse, 1));
+        codegen_expression(getchild(ifthenelse, 2));
         if (getchild(getchild(ifthenelse, 2), 0))
             e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
         else
