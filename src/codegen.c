@@ -298,6 +298,8 @@ int codegen_store(struct node *store_node) {
     struct node *target = getchild(store_node, 0);
     struct node *value = getchild(store_node, 1);
 
+    int value_tmp = codegen_expression(value);
+
     struct node *parameter;
     int curr = 0;
     int flag = 0;
@@ -310,11 +312,8 @@ int codegen_store(struct node *store_node) {
         }
     }
 
-    int value_tmp = codegen_expression(value);
-
     if (flag) {
-        if (search_symbol(symbol_table, target->token)) // Variavel global
-            printf("  %%%s = add i32 %%%d, 0\n", target->token, value_tmp);
+        printf("  %%%s = add i32 %%%d, 0\n", target->token, value_tmp);
     } else {
         if (search_symbol(symbol_table, target->token)) // Variavel global
             printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
