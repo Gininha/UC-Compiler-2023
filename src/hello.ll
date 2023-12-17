@@ -21,23 +21,29 @@ define void @_funcao_com_globais() {
   %10 = load i32, i32* @u_know
   %11 = load i32, i32* @w
   %12 = add i32 %10, %11
-  store i32 %12, i32* %_res_2
+  %13 = add i32 100, 0
+  %14 = sub i32 %12, %13
+  store i32 %14, i32* %_res_2
   %_res_3 = alloca i32
-  %13 = load i32, i32* @kappa
-  %14 = load i32, i32* @u_know
-  %15 = add i32 %13, %14
-  store i32 %15, i32* %_res_3
-  %16 = load i32, i32* %_res_1
-  %17 = tail call i32 @putchar(i32 %16)
-  %18 = load i32, i32* %_res_2
-  %19 = tail call i32 @putchar(i32 %18)
-  %20 = load i32, i32* %_res_3
+  %15 = load i32, i32* @kappa
+  %16 = load i32, i32* @u_know
+  %17 = add i32 %15, %16
+  %18 = add i32 100, 0
+  %19 = sub i32 %17, %18
+  store i32 %19, i32* %_res_3
+  %20 = load i32, i32* %_res_1
   %21 = tail call i32 @putchar(i32 %20)
+  %22 = load i32, i32* %_res_2
+  %23 = tail call i32 @putchar(i32 %22)
+  %24 = load i32, i32* %_res_3
+  %25 = tail call i32 @putchar(i32 %24)
   %_ala_u_akbar = alloca double
-  %22 = load i32, i32* @kek
-  %23 = load i32, i32* @kek_1
-  %24 = fadd double %22, %23
-  store double %24, double* %_ala_u_akbar
+  %26 = load double, double* @kek
+  %27 = load double, double* @kek_1
+  %28 = fadd double %26, %27
+  store double %28, double* %_ala_u_akbar
+  %29 = add i32 10, 0
+  %30 = tail call i32 @putchar(i32 %29)
   ret void
 }
 
@@ -104,15 +110,16 @@ L8end:
 
 define double @main() {
   %1 = add i32 0, 0
-  store double %1, double* @kek
-  %2 = fadd double 1.2, 0.0
-  store double %2, double* @kek_1
-  %3 = add i32 75, 0
-  store i32 %3, i32* @kappa
-  %4 = add i32 112, 0
-  store i32 %4, i32* @u_know
-  %5 = add i32 40, 0
-  store i32 %5, i32* @w
-  %6 = call double @_main()
-  ret double %1
+  %2 = sitofp i32 %1 to double
+  store double %2, double* @kek
+  %3 = fadd double 1.2, 0.0
+  store double %3, double* @kek_1
+  %4 = add i32 75, 0
+  store i32 %4, i32* @kappa
+  %5 = add i32 112, 0
+  store i32 %5, i32* @u_know
+  %6 = add i32 40, 0
+  store i32 %6, i32* @w
+  %7 = call double @_main()
+  ret double %7
 }

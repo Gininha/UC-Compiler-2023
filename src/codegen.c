@@ -78,9 +78,12 @@ int codegen_decimal(struct node *decimal) {
 
 int codegen_identifier(struct node *identifier) {
 
-    if (search_symbol(symbol_table, identifier->token)) // Variavel global
-        printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
-    else{
+    if (search_symbol(symbol_table, identifier->token)){ // Variavel global
+        if(identifier->type == double_type)
+            printf("  %%%d = load double, double* @%s\n", temporary, identifier->token);
+        else
+            printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
+    }else{
         if(identifier->type == double_type)
             printf("  %%%d = load double, double* %%_%s\n", temporary, identifier->token);
         else
@@ -517,7 +520,7 @@ void codegen_global_aux(struct node *declaration) {
     struct node *type_node = getchild(declaration, 0);
     struct node *identifier_node = getchild(declaration, 1);
     struct node *value_node = getchild(declaration, 2);
-
+    int teste = 0;
     // Map UC data types to LLVM IR types
     const char *llvm_type;
     if (type_node->category == Int || type_node->category == Short || type_node->category == Char) {
@@ -527,8 +530,14 @@ void codegen_global_aux(struct node *declaration) {
     }
 
     if (value_node != NULL) {
-        int teste = codegen_expression(value_node);
 
+        teste = codegen_expression(value_node);
+        
+        if(type_node->category == Double && value_node->type != double_type){
+            printf("  %%%d = sitofp i32 %%%d to double\n", temporary++, teste);     // Isto converte i32 para double e o s acho q é com sinal
+            teste = temporary-1;
+        }
+        
         printf("  store %s %%%d, %s* @%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 }
@@ -595,12 +604,12 @@ void codegen_program(struct node *program) {
         }
         if(entry->type == double_type){
             printf("  %%%d = call double @_main()\n", temporary);
-            printf("  ret double %%1\n"
-                "}\n");
+            printf("  ret double %%%d\n"
+                "}\n", temporary);
         }else{
             printf("  %%%d = call i32 @_main()\n", temporary);
-            printf("  ret i32 %%1\n"
-                "}\n");
+            printf("  ret i32 %%%d\n"
+                "}\n", temporary);
         }
     }
 }
