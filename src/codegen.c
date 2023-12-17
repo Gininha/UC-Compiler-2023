@@ -383,7 +383,7 @@ int codegen_eq(struct node *eq_node) {
 int codegen_minus(struct node *minus) {
     int e1 = codegen_expression(getchild(minus, 0));
     if (minus->type == double_type) {
-        printf("  %%%d = fsub double 0, %%%d\n", temporary, e1);
+        printf("  %%%d = fsub double 0.0, %%%d\n", temporary, e1);
     } else {
         printf("  %%%d = sub i32 0, %%%d\n", temporary, e1);
     }
@@ -391,11 +391,10 @@ int codegen_minus(struct node *minus) {
     return temporary++;
 }
 
-
 int codegen_plus(struct node *plus_node) {
     int e1 = codegen_expression(getchild(plus_node, 0));
     if (plus_node->type == double_type) {
-        printf("  %%%d = fadd double 0, %%%d\n", temporary, e1);
+        printf("  %%%d = fadd double 0.0, %%%d\n", temporary, e1);
     } else {
         printf("  %%%d = add i32 0, %%%d\n", temporary, e1);
     }
@@ -415,12 +414,12 @@ int codegen_store(struct node *store_node) {
 
     int value_tmp = codegen_expression(value);
 
-    if (search_symbol(symbol_table, target->token)){ // Variavel global
+    if (search_symbol(symbol_table, target->token)) { // Variavel global
         if (target->type == double_type) {
             printf("  store double %%%d, double* @%s\n", value_tmp, target->token);
         } else
             printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
-    }else {
+    } else {
         if (target->type == double_type) {
             printf("  store double %%%d, double* %%_%s\n", value_tmp, target->token);
         } else
@@ -659,12 +658,6 @@ void codegen_global_aux(struct node *declaration) {
     if (value_node != NULL) {
 
         teste = codegen_expression(value_node);
-
-        if (type_node->category == Double && value_node->type != double_type) {
-            printf("  %%%d = sitofp i32 %%%d to double\n", temporary++, teste); // Isto converte i32 para double e o s acho q é com sinal
-            teste = temporary - 1;
-        }
-
         printf("  store %s %%%d, %s* @%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 }
@@ -684,13 +677,9 @@ void codegen_global_dec(struct node *declaration) {
 
     if (value_node != NULL) {
         if (type_node->category == Double) {
-            if (value_node->type != double_type)
-                printf("@%s = global %s %s.0\n", identifier_node->token, llvm_type, value_node->token);
-            else
-                printf("@%s = global %s %s\n", identifier_node->token, llvm_type, value_node->token);
+            printf("@%s = global %s 0.0\n", identifier_node->token, llvm_type);
         } else {
-            int value = get_value(value_node->token);
-            printf("@%s = global %s %d\n", identifier_node->token, llvm_type, value);
+            printf("@%s = global %s 0\n", identifier_node->token, llvm_type);
         }
     }
 }
