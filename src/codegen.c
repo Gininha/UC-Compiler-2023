@@ -119,8 +119,7 @@ int codegen_ifthenelse(struct node *ifthenelse) {
     int label_id = temporary++;
     printf("  %%%d = alloca i32\n", label_id);
     int e = codegen_expression(getchild(ifthenelse, 0));
-    printf("  %%%d = zext i1 %%%d to i32\n", temporary++, e);
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary, e + 1);
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary, e);
     printf("  br i1 %%%d, label %%L%dthen, label %%L%delse\n", temporary++, label_id, label_id);
 
     printf("L%dthen:\n", label_id);
@@ -179,11 +178,10 @@ int codegen_declaration(struct node *declaration) {
         llvm_type = "double";
     }
 
+    printf("  %%_%s = alloca %s\n", identifier_node->token, llvm_type);
+
     // Code generation for initializing with a constant value (if provided)
     if (value_node != NULL) {
-
-        // Code generation for variable declaration
-        printf("  %%_%s = alloca %s\n", identifier_node->token, llvm_type);
 
         int teste = codegen_expression(value_node);
 
