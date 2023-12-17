@@ -605,9 +605,9 @@ void codegen_function(struct node *function) {
     flag = codegen_funcbody(getchild(function, 3));
     if (!flag) {
         if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
-            printf("  ret i32 %%%d\n", temporary - 1);
+            printf("  ret i32 0\n");
         if (getchild(function, 0)->category == Double)
-            printf("  ret double 1.0\n");
+            printf("  ret double 0.0\n");
         if (getchild(function, 0)->category == Void)
             printf("  ret void\n");
     }
