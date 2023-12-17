@@ -245,6 +245,32 @@ int codegen_return(struct node *return_node) {
     return temporary;
 }
 
+int codegen_and(struct node *and_node) {
+    int e1 = codegen_expression(getchild(and_node, 0));
+    int e2 = codegen_expression(getchild(and_node, 1));
+
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e1);
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e2);
+    printf("  %%%d = and i1 %%%d, %%%d\n", temporary, temporary-2, temporary-1);
+    int aux = temporary;
+    printf("  %%%d = zext i1 %%%d to i32\n", ++temporary, aux);
+
+    return temporary++;
+}
+
+int codegen_or(struct node *or_node) {
+    int e1 = codegen_expression(getchild(or_node, 0));
+    int e2 = codegen_expression(getchild(or_node, 1));
+
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e1);
+    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e2);
+    printf("  %%%d = or i1 %%%d, %%%d\n", temporary, temporary-2, temporary-1);
+    int aux = temporary;
+    printf("  %%%d = zext i1 %%%d to i32\n", ++temporary, aux);
+
+    return temporary++;
+}
+
 int codegen_le(struct node *le_node) {
     int e1 = codegen_expression(getchild(le_node, 0));
     int e2 = codegen_expression(getchild(le_node, 1));
@@ -329,7 +355,8 @@ int codegen_plus(struct node *plus_node) {
 
 int codegen_not(struct node *not_node) {
     int e1 = codegen_expression(getchild(not_node, 0));
-    printf("  %%%d = icmp eq i32 %%%d, 0\n", temporary, e1);
+    printf("  %%%d = icmp eq i32 %%%d, 0\n", temporary++, e1);
+    printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary-1);
     return temporary++;
 }
 
@@ -362,6 +389,14 @@ int codegen_chrlit(struct node *chrlit_node) {
 
 void codegen_Statlist(struct node *expression) {
     struct node_list *children = expression->children;
+
+    while ((children = children->next) != NULL) {
+        codegen_expression(children->node);
+    }
+}
+
+void codegen_comma(struct node *comma) {
+    struct node_list *children = comma->children;
 
     while ((children = children->next) != NULL) {
         codegen_expression(children->node);
@@ -455,6 +490,15 @@ int codegen_expression(struct node *expression) {
         break;
     case Plus:
         tmp = codegen_plus(expression);
+        break;
+    case Or:
+        tmp = codegen_or(expression);
+        break;
+    case And:
+        tmp = codegen_and(expression);
+        break;
+    case Comma:
+        codegen_comma(expression);
         break;
     default:
         if (expression->category != Null)
