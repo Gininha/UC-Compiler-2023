@@ -60,6 +60,8 @@ int main(void) {
     testezito();
     b = teste_c(a, 10);
 
+    somaarg(3);
+    
     putchar(sus(50));
 
     putchar(b);
