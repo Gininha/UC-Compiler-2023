@@ -171,6 +171,7 @@ int codegen_declaration(struct node *declaration) {
     struct node *type_node = getchild(declaration, 0);
     struct node *identifier_node = getchild(declaration, 1);
     struct node *value_node = getchild(declaration, 2);
+    int teste = 0;
     // Map UC data types to LLVM IR types
     const char *llvm_type;
     if (type_node->category == Int || type_node->category == Short || type_node->category == Char) {
@@ -184,8 +185,13 @@ int codegen_declaration(struct node *declaration) {
     // Code generation for initializing with a constant value (if provided)
     if (value_node != NULL) {
 
-        int teste = codegen_expression(value_node);
-
+        teste = codegen_expression(value_node);
+        
+        if(type_node->category == Double && value_node->type != double_type){
+            printf("  %%%d = sitofp i32 %%%d to double\n", temporary++, teste);     // Isto converte i32 para double e o s acho q é com sinal
+            teste = temporary-1;
+        }
+        
         printf("  store %s %%%d, %s* %%_%s\n", llvm_type, teste, llvm_type, identifier_node->token);
     }
 
