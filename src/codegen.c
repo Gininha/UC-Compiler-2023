@@ -88,10 +88,7 @@ int codegen_identifier(struct node *identifier) {
     }
 
     if (flag) {
-        if (search_symbol(symbol_table, identifier->token)) // Variavel global
-            printf("  %%%d = add i32 @%s, 0\n", temporary, identifier->token);
-        else
-            printf("  %%%d = add i32 %%%s, 0\n", temporary, identifier->token);
+        printf("  %%%d = add i32 %%%s, 0\n", temporary, identifier->token);
     } else {
         if (search_symbol(symbol_table, identifier->token)) // Variavel global
             printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
@@ -301,9 +298,29 @@ int codegen_store(struct node *store_node) {
     struct node *target = getchild(store_node, 0);
     struct node *value = getchild(store_node, 1);
 
+    struct node *parameter;
+    int curr = 0;
+    int flag = 0;
+    while ((parameter = getchild(aux_func_parameters, curr++)) != NULL) {
+        if (getchild(parameter, 0)->category != Void) {
+            if (strcmp(getchild(parameter, 1)->token, target->token) == 0) {
+                flag = 1;
+                break;
+            }
+        }
+    }
+
     int value_tmp = codegen_expression(value);
 
-    printf("  store i32 %%%d, i32* %%%s\n", value_tmp, target->token);
+    if (flag) {
+        if (search_symbol(symbol_table, target->token)) // Variavel global
+            printf("  %%%s = add i32 %%%d, 0\n", target->token, value_tmp);
+    } else {
+        if (search_symbol(symbol_table, target->token)) // Variavel global
+            printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
+        else
+            printf("  store i32 %%%d, i32* %%%s\n", value_tmp, target->token);
+    }
 
     return temporary;
 }
