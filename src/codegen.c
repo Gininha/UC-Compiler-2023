@@ -123,10 +123,17 @@ int codegen_call(struct node *call) {
     while ((arguments = arguments->next) != NULL) {
         int e = codegen_expression(arguments->node);
         char str[18];
-        if (curr > 1)
-            sprintf(str, ", i32 %%%d", e);
-        else
-            sprintf(str, "i32 %%%d", e);
+        if (curr > 1){
+            if(arguments->node->type == double_type)
+                sprintf(str, ", double %%%d", e);
+            else
+                sprintf(str, ", i32 %%%d", e);
+        }else{
+            if(arguments->node->type == double_type)
+                sprintf(str, "double %%%d", e);
+            else
+                sprintf(str, "i32 %%%d", e);
+        }
         arguments_str = realloc(arguments_str, strlen(arguments_str) + strlen(str) + 1);
         strcat(arguments_str, str);
         curr++;
@@ -288,25 +295,42 @@ int codegen_return(struct node *return_node) {
 int codegen_and(struct node *and_node) {
     int e1 = codegen_expression(getchild(and_node, 0));
     int e2 = codegen_expression(getchild(and_node, 1));
+    
+    if (getchild(and_node, 0)->type == double_type) 
+        printf("  %%%d = fcmp oeq double %%%d, 0.0\n", temporary++, e1);
+    else
+        printf("  %%%d = icmp eq i32 %%%d, 0\n", temporary++, e1);
 
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e1);
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e2);
+    if(getchild(and_node, 1)->type == double_type)
+        printf("  %%%d = fcmp oeq double %%%d, 0.0\n", temporary++, e2);
+    else
+        printf("  %%%d = icmp eq i32 %%%d, 0\n", temporary++, e2);
+
     printf("  %%%d = and i1 %%%d, %%%d\n", temporary, temporary - 2, temporary - 1);
     int aux = temporary;
-    printf("  %%%d = zext i1 %%%d to i32\n", ++temporary, aux);
+    printf("  %%%d = sext i1 %%%d to i32\n", ++temporary, aux);
 
     return temporary++;
 }
+
 
 int codegen_or(struct node *or_node) {
     int e1 = codegen_expression(getchild(or_node, 0));
     int e2 = codegen_expression(getchild(or_node, 1));
 
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e1);
-    printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e2);
+    if (getchild(or_node, 0)->type == double_type) 
+        printf("  %%%d = fcmp one double %%%d, 0.0\n", temporary++, e1);
+    else
+        printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e1);
+
+    if(getchild(or_node, 1)->type == double_type)
+        printf("  %%%d = fcmp one double %%%d, 0.0\n", temporary++, e2);
+    else
+        printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary++, e2);
+
     printf("  %%%d = or i1 %%%d, %%%d\n", temporary, temporary - 2, temporary - 1);
     int aux = temporary;
-    printf("  %%%d = zext i1 %%%d to i32\n", ++temporary, aux);
+    printf("  %%%d = sext i1 %%%d to i32\n", ++temporary, aux);
 
     return temporary++;
 }
@@ -314,7 +338,12 @@ int codegen_or(struct node *or_node) {
 int codegen_le(struct node *le_node) {
     int e1 = codegen_expression(getchild(le_node, 0));
     int e2 = codegen_expression(getchild(le_node, 1));
-    printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary++, e1, e2);
+
+    if (getchild(le_node, 0)->type == double_type || getchild(le_node, 1)->type == double_type) 
+        printf("  %%%d = fcmp ole double %%%d, %%%d\n", temporary++, e1, e2);
+    else
+        printf("  %%%d = icmp sle i32 %%%d, %%%d\n", temporary++, e1, e2);
+
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
@@ -322,7 +351,11 @@ int codegen_le(struct node *le_node) {
 int codegen_gt(struct node *gt_node) {
     int e1 = codegen_expression(getchild(gt_node, 0));
     int e2 = codegen_expression(getchild(gt_node, 1));
-    printf("  %%%d = icmp sgt i32 %%%d, %%%d\n", temporary++, e1, e2);
+    if (getchild(gt_node, 0)->type == double_type || getchild(gt_node, 1)->type == double_type) 
+        printf("  %%%d = fcmp ogt double %%%d, %%%d\n", temporary++, e1, e2);
+    else
+        printf("  %%%d = icmp sgt i32 %%%d, %%%d\n", temporary++, e1, e2);
+
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
@@ -330,7 +363,11 @@ int codegen_gt(struct node *gt_node) {
 int codegen_lt(struct node *lt_node) {
     int e1 = codegen_expression(getchild(lt_node, 0));
     int e2 = codegen_expression(getchild(lt_node, 1));
-    printf("  %%%d = icmp slt i32 %%%d, %%%d\n", temporary++, e1, e2);
+    if (getchild(lt_node, 0)->type == double_type || getchild(lt_node, 1)->type == double_type) 
+        printf("  %%%d = fcmp olt double %%%d, %%%d\n", temporary++, e1, e2);
+    else
+        printf("  %%%d = icmp slt i32 %%%d, %%%d\n", temporary++, e1, e2);
+
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
@@ -338,7 +375,11 @@ int codegen_lt(struct node *lt_node) {
 int codegen_ge(struct node *ge_node) {
     int e1 = codegen_expression(getchild(ge_node, 0));
     int e2 = codegen_expression(getchild(ge_node, 1));
-    printf("  %%%d = icmp sge i32 %%%d, %%%d\n", temporary++, e1, e2);
+    if (getchild(ge_node, 0)->type == double_type || getchild(ge_node, 1)->type == double_type) 
+        printf("  %%%d = fcmp oge double %%%d, %%%d\n", temporary++, e1, e2);
+    else
+        printf("  %%%d = icmp sge i32 %%%d, %%%d\n", temporary++, e1, e2);
+
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
@@ -367,15 +408,27 @@ int codegen_bitwise_or(struct node *or_node) {
 int codegen_ne(struct node *ne_node) {
     int e1 = codegen_expression(getchild(ne_node, 0));
     int e2 = codegen_expression(getchild(ne_node, 1));
-    printf("  %%%d = icmp ne i32 %%%d, %%%d\n", temporary++, e1, e2);
+
+    if (getchild(ne_node, 0)->type == double_type || getchild(ne_node, 1)->type == double_type) {
+        printf("  %%%d = fcmp one double %%%d, %%%d\n", temporary++, e1, e2);
+    } else {
+        printf("  %%%d = icmp ne i32 %%%d, %%%d\n", temporary++, e1, e2);
+    }
+
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
 
+
 int codegen_eq(struct node *eq_node) {
     int e1 = codegen_expression(getchild(eq_node, 0));
     int e2 = codegen_expression(getchild(eq_node, 1));
-    printf("  %%%d = icmp eq i32 %%%d, %%%d\n", temporary++, e1, e2);
+
+    if(getchild(eq_node, 0)->type == double_type || getchild(eq_node, 1)->type == double_type)
+        printf("%%%d = fcmp oeq double %%%d, %%%d\n", temporary++, e1, e2);
+    else
+        printf("  %%%d = icmp eq i32 %%%d, %%%d\n", temporary++, e1, e2);
+    
     printf("  %%%d = zext i1 %%%d to i32\n", temporary, temporary - 1);
     return temporary++;
 }
@@ -383,7 +436,7 @@ int codegen_eq(struct node *eq_node) {
 int codegen_minus(struct node *minus) {
     int e1 = codegen_expression(getchild(minus, 0));
     if (minus->type == double_type) {
-        printf("  %%%d = fsub double 0, %%%d\n", temporary, e1);
+        printf("  %%%d = fsub double 0.0, %%%d\n", temporary, e1);
     } else {
         printf("  %%%d = sub i32 0, %%%d\n", temporary, e1);
     }
@@ -395,7 +448,7 @@ int codegen_minus(struct node *minus) {
 int codegen_plus(struct node *plus_node) {
     int e1 = codegen_expression(getchild(plus_node, 0));
     if (plus_node->type == double_type) {
-        printf("  %%%d = fadd double 0, %%%d\n", temporary, e1);
+        printf("  %%%d = fadd double 0.0, %%%d\n", temporary, e1);
     } else {
         printf("  %%%d = add i32 0, %%%d\n", temporary, e1);
     }
@@ -582,10 +635,17 @@ void codegen_parameters(struct node *parameters) {
         if (getchild(parameter, 0)->category != Void) {
             if (curr > 1)
                 printf(", ");
-            if (getchild(parameter, 1))
-                printf("i32 %%%s", getchild(parameter, 1)->token);
-            else
-                printf("i32");
+            if (getchild(parameter, 1)){
+                if(getchild(parameter, 0)->category == Double)
+                    printf("double %%%s", getchild(parameter, 1)->token);
+                else
+                    printf("i32 %%%s", getchild(parameter, 1)->token);
+            }else{
+                if(getchild(parameter, 0)->category == Double)
+                    printf("double");
+                else
+                    printf("i32");
+            }
         }
     }
 
