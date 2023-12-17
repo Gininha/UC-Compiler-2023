@@ -100,14 +100,14 @@ int codegen_call(struct node *call) {
         strcat(arguments_str, str);
         curr++;
     }
-    if((strcmp(aux->token, "putchar") == 0 )|| (strcmp(aux->token, "getchar") == 0))
+    if ((strcmp(aux->token, "putchar") == 0) || (strcmp(aux->token, "getchar") == 0))
         printf("  %%%d = tail call i32 @%s(%s)\n", temporary, getchild(call, 0)->token, arguments_str);
-    else{
-        if(aux->type == integer_type || aux->type == short_type || aux->type == char_type)
+    else {
+        if (aux->type == integer_type || aux->type == short_type || aux->type == char_type)
             printf("  %%%d = tail call i32 @_%s(%s)\n", temporary, getchild(call, 0)->token, arguments_str);
-        if(aux->type == double_type)
+        if (aux->type == double_type)
             printf("  %%%d = tail call double @_%s(%s)\n", temporary, getchild(call, 0)->token, arguments_str);
-        if(aux->type == void_type){
+        if (aux->type == void_type) {
             printf("  tail call void @_%s(%s)\n", getchild(call, 0)->token, arguments_str);
             temporary--;
         }
@@ -463,25 +463,25 @@ void codegen_parameters(struct node *parameters) {
 }
 
 void codegen_function(struct node *function) {
-    //char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
-    //printf("%s\n", category_array[function])
+    // char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
+    // printf("%s\n", category_array[function])
     int flag = 0;
     temporary = 1;
-    if(getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
+    if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
         printf("define i32 @_%s(", getchild(function, 1)->token);
-    if(getchild(function, 0)->category == Double)
+    if (getchild(function, 0)->category == Double)
         printf("define double @_%s(", getchild(function, 1)->token);
-    if(getchild(function, 0)->category == Void)
+    if (getchild(function, 0)->category == Void)
         printf("define void @_%s(", getchild(function, 1)->token);
 
     codegen_parameters(getchild(function, 2));
     flag = codegen_funcbody(getchild(function, 3));
-    if(!flag){
-        if(getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
+    if (!flag) {
+        if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
             printf("  ret i32 1\n");
-        if(getchild(function, 0)->category == Double)
+        if (getchild(function, 0)->category == Double)
             printf("  ret double 1\n");
-        if(getchild(function, 0)->category == Void)
+        if (getchild(function, 0)->category == Void)
             printf("  ret void\n");
     }
     printf("}\n\n");
@@ -525,7 +525,10 @@ void codegen_global_dec(struct node *declaration) {
     }
 
     if (value_node != NULL) {
-        printf("@%s = global %s 0\n", identifier_node->token, llvm_type);
+        if (type_node->category == Double)
+            printf("@%s = global %s 0.0\n", identifier_node->token, llvm_type);
+        else
+            printf("@%s = global %s 0\n", identifier_node->token, llvm_type);
     }
 }
 
