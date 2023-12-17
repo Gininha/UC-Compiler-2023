@@ -6,6 +6,7 @@
 #include <string.h>
 
 int temporary;
+int aux_func_category;
 
 extern struct symbol_list *symbol_table;
 
@@ -243,19 +244,33 @@ int codegen_declaration(struct node *declaration) {
 }
 
 int codegen_return(struct node *return_node) {
-    //char *category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null"};
-    
+    // char *category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null"};
+
     struct node *return_value = getchild(return_node, 0);
 
     // Code generation for the return value
     int return_value_tmp = codegen_expression(return_value);
 
-    if(return_value->type == double_type){
-        printf("  ret double %%%d\n", return_value_tmp);
-    }else
-        printf("  ret i32 %%%d\n", return_value_tmp);
+    if (aux_func_category == Void)
+        printf("  ret void\n");
 
-    return temporary;
+    else if (aux_func_category == Double) {
+        if (return_value->type != double_type) {
+
+            printf("  %%%d = sitofp i32 %%%d to double\n", temporary, return_value_tmp);
+            printf("  ret double %%%d\n", temporary);
+        } else
+            printf("  ret double %%%d\n", return_value_tmp);
+    } else {
+        if (return_value->type != integer_type) {
+
+            printf("  %%%d = fptosi double %%%d to i32\n", temporary, return_value_tmp);
+            printf("  ret i32 %%%d\n", temporary);
+        } else
+            printf("  ret i32 %%%d\n", return_value_tmp);
+    }
+
+    return temporary++;
 }
 
 int codegen_and(struct node *and_node) {
@@ -577,6 +592,7 @@ void codegen_parameters(struct node *parameters) {
 void codegen_function(struct node *function) {
     // char* category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null" };
     // printf("%s\n", category_array[function])
+    aux_func_category = getchild(function, 0)->category;
     int flag = 0;
     temporary = 1;
     if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
