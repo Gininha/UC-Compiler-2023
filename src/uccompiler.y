@@ -48,97 +48,65 @@ struct node *program;
 
 %%
 
-Program: FunctionsAndDeclarations                                           {
-                                                                                $$ = program = newnode(Program, NULL);
-                                                                                addchild($$, $1);
-                                                                            }
+Program: FunctionsAndDeclarations                                           { $$ = program = newnode(Program, NULL);
+                                                                                addchild($$, $1); }
 
 FunctionsAndDeclarations: FunctionDefinition                                { $$ = $1; }
                         | FunctionDeclaration                               { $$ = $1; }
                         | Declaration                                       { $$ = $1; }
-                        | FunctionsAndDeclarations FunctionDefinition       {
-                                                                                $$ = $1;
-                                                                                addbrother($$, $2);
-                                                                            }
-                        | FunctionsAndDeclarations FunctionDeclaration      {
-                                                                                $$ = $1;
-                                                                                addbrother($$, $2);
-                                                                            }
-                        | FunctionsAndDeclarations Declaration              {
-                                                                                $$ = $1;
-                                                                                addbrother($$, $2);
-                                                                            }
+                        | FunctionsAndDeclarations FunctionDefinition       { $$ = $1;
+                                                                                addbrother($$, $2); }
+                        | FunctionsAndDeclarations FunctionDeclaration      { $$ = $1;
+                                                                                addbrother($$, $2); }
+                        | FunctionsAndDeclarations Declaration              { $$ = $1;
+                                                                                addbrother($$, $2); }
                         ;
 
-FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                {
-                                                                                $$ = newnode(FuncDefinition, NULL);
+FunctionDefinition: TypeSpec FunctionDeclarator FunctionBody                { $$ = newnode(FuncDefinition, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
-                                                                                addchild($$, $3);
-                                                                            }
+                                                                                addchild($$, $3); }
                   ;
 
 FunctionBody: LBRACE DeclarationsAndStatements RBRACE                       { $$ = $2; }
             | LBRACE RBRACE                                                 { $$ = newnode(FuncBody, NULL); }
             ;
 
-DeclarationsAndStatements: DeclarationsAndStatements Statement              {
-                                                                                $$ = $1;
-                                                                                if ($2) {
-                                                                                    addchild($$, $2);
-                                                                                }
-                                                                            }
-                         | DeclarationsAndStatements Declaration            {
-                                                                                $$ = $1;
-                                                                                addchild($$, $2);
-                                                                            }
-                         | Statement                                        {
-                                                                                $$ = newnode(FuncBody, NULL);
-                                                                                addchild($$, $1);
-                                                                            }
-                         | Declaration                                      {
-                                                                                $$ = newnode(FuncBody, NULL);
-                                                                                addchild($$, $1);
-                                                                            }
+DeclarationsAndStatements: DeclarationsAndStatements Statement              { $$ = $1;
+                                                                                if ($2) 
+                                                                                    addchild($$, $2); }
+                         | DeclarationsAndStatements Declaration            { $$ = $1;
+                                                                                addchild($$, $2); }
+                         | Statement                                        { $$ = newnode(FuncBody, NULL);
+                                                                                addchild($$, $1); }
+                         | Declaration                                      { $$ = newnode(FuncBody, NULL);
+                                                                                addchild($$, $1); }
                          ;
 
-FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       {
-                                                                                $$ = newnode(FuncDeclaration, NULL);
+FunctionDeclaration: TypeSpec FunctionDeclarator SEMI                       { $$ = newnode(FuncDeclaration, NULL);
                                                                                 addchild($$, $1);
-                                                                                addchild($$, $2);
-                                                                            }
+                                                                                addchild($$, $2); }
                    ;
 
-FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      {
-                                                                                $$ = newnode(Identifier, $1);
+FunctionDeclarator: IDENTIFIER LPAR ParameterList RPAR                      { $$ = newnode(Identifier, $1);
                                                                                 addbrother($$, $3);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
 
-ParameterList: ParameterDeclaration                                         {
-                                                                                $$ = newnode(ParamList, NULL);
-                                                                                addchild($$, $1);
-                                                                            }
-             | ParameterList COMMA ParameterDeclaration                     {
-                                                                                $$ = $1;
-                                                                                addchild($$, $3);
-                                                                            }
+ParameterList: ParameterDeclaration                                         { $$ = newnode(ParamList, NULL);
+                                                                                addchild($$, $1); }
+             | ParameterList COMMA ParameterDeclaration                     { $$ = $1;
+                                                                                addchild($$, $3); }
              ;
 
-ParameterDeclaration: TypeSpec                                              {
-                                                                                $$ = newnode(ParamDeclaration, NULL);
-                                                                                addchild($$, $1);
-                                                                            }
-                    | TypeSpec IDENTIFIER                                   {
-                                                                                $$ = newnode(ParamDeclaration, NULL);
+ParameterDeclaration: TypeSpec                                              { $$ = newnode(ParamDeclaration, NULL);
+                                                                                addchild($$, $1); }
+                    | TypeSpec IDENTIFIER                                   { $$ = newnode(ParamDeclaration, NULL);
                                                                                 addchild($$, $1);
                                                                                 addchild($$, newnode(Identifier, $2));
-                                                                                Tracker(getchild($$, 1), @2.first_line, @2.first_column);
-                                                                            }
+                                                                                Tracker(getchild($$, 1), @2.first_line, @2.first_column); }
                     ;
 
-Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
-                                                                                $$ = newnode(Declaration, NULL);
+Declaration: TypeSpec Declarator Aux_Declaration SEMI                       { $$ = newnode(Declaration, NULL);
                                                                                 
                                                                                 addchild($$, $1);
                                                                                 addchild($$, $2);
@@ -171,99 +139,70 @@ Declaration: TypeSpec Declarator Aux_Declaration SEMI                       {
                                                                                     
                                                                                     Remove_conns(antigo_child);
                                                                                     aux = aux->next;
-                                                                                }
-                                                                            }
-           | TypeSpec Declarator SEMI                                       {
-                                                                                $$ = newnode(Declaration, NULL);
+                                                                                } }
+           | TypeSpec Declarator SEMI                                       { $$ = newnode(Declaration, NULL);
                                                                                 addchild($$, $1);
-                                                                                addchild($$, $2);
-                                                                            }
+                                                                                addchild($$, $2); }
            | error SEMI                                                     { $$ = newnode(Null, NULL); has_error = 1; }
            ;
 
-Aux_Declaration: COMMA Declarator                                           {
-                                                                                $$ = newnode(Declaration, NULL);
-                                                                                addchild($$, $2);
-                                                                            }
-               | Aux_Declaration COMMA Declarator                           {
-                                                                                $$ = $1;
+Aux_Declaration: COMMA Declarator                                           { $$ = newnode(Declaration, NULL);
+                                                                                addchild($$, $2); }
+               | Aux_Declaration COMMA Declarator                           { $$ = $1;
                                                                                 struct node *temp = newnode(Declaration, NULL);
                                                                                 addchild(temp, $3);
-                                                                                addbrother($$, temp);
-                                                                            }
+                                                                                addbrother($$, temp); }
                ;
 
-TypeSpec: CHAR                                                              {
-                                                                                $$ = newnode(Char, NULL);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
-        | INT                                                               {
-                                                                                $$ = newnode(Int, NULL);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
-        | VOID                                                              {
-                                                                                $$ = newnode(Void, NULL);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
-        | SHORT                                                             {
-                                                                                $$ = newnode(Short, NULL);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
-        | DOUBLE                                                            {
-                                                                                $$ = newnode(Double, NULL);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
+TypeSpec: CHAR                                                              { $$ = newnode(Char, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
+        | INT                                                               { $$ = newnode(Int, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
+        | VOID                                                              { $$ = newnode(Void, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
+        | SHORT                                                             { $$ = newnode(Short, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
+        | DOUBLE                                                            { $$ = newnode(Double, NULL);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
         ;
 
-Declarator: IDENTIFIER                                                      {
-                                                                                $$ = newnode(Identifier, $1);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-
-                                                                            }
-          | IDENTIFIER ASSIGN Expr                                          {
-                                                                                $$ = newnode(Identifier, $1);
+Declarator: IDENTIFIER                                                      { $$ = newnode(Identifier, $1);
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
+          | IDENTIFIER ASSIGN Expr                                          { $$ = newnode(Identifier, $1);
                                                                                 addbrother($$, $3);
-                                                                                Tracker($$, @1.first_line, @1.first_column);
-                                                                            }
+                                                                                Tracker($$, @1.first_line, @1.first_column); }
           ;
 
 Statement: Expr SEMI                                                        { $$ = $1; }
          | SEMI                                                             { $$ = NULL; }
          | LBRACE RBRACE                                                    { $$ = NULL; }
          | LBRACE recursionS RBRACE                                         { if ($2 && $2->brotherhood) { $$ = newnode(StatList, NULL); addchild($$, $2); } else { $$ = $2; } }
-         | IF LPAR Expr RPAR StatementOrError                %prec LOW      {
-                                                                                $$ = newnode(If, NULL);
+         | IF LPAR Expr RPAR StatementOrError                %prec LOW      { $$ = newnode(If, NULL);
                                                                                 addchild($$, $3);
                                                                                 if ($5) {
                                                                                     addchild($$, $5);
                                                                                 } else {
                                                                                     addchild($$, newnode(Null, NULL));
                                                                                 }
-                                                                                addchild($$, newnode(Null, NULL));
-                                                                            }
-         | IF LPAR Expr RPAR StatementOrError ELSE StatementOrError         {
-                                                                                $$ = newnode(If, NULL);
+                                                                                addchild($$, newnode(Null, NULL)); }
+         | IF LPAR Expr RPAR StatementOrError ELSE StatementOrError         { $$ = newnode(If, NULL);
                                                                                 addchild($$, $3);
-                                                                                if ($5) {
+                                                                                if ($5)
                                                                                     addchild($$, $5);
-                                                                                } else {
+                                                                                else
                                                                                     addchild($$, newnode(Null, NULL));
-                                                                                }
-                                                                                if ($7) {
+
+                                                                                if ($7)
                                                                                     addchild($$, $7);
-                                                                                } else {
-                                                                                    addchild($$, newnode(Null, NULL));
-                                                                                }
-                                                                            }
-         | WHILE LPAR Expr RPAR StatementOrError                            {
-                                                                                $$ = newnode(While, NULL);
+                                                                                else
+                                                                                    addchild($$, newnode(Null, NULL)); }
+         | WHILE LPAR Expr RPAR StatementOrError                            { $$ = newnode(While, NULL);
                                                                                 addchild($$, $3);
-                                                                                if ($5) {
+                                                                                if ($5)
                                                                                     addchild($$, $5);
-                                                                                } else {
+                                                                                else
                                                                                     addchild($$, newnode(Null, NULL));
                                                                                 }
-                                                                            }
          | RETURN SEMI                                                      { $$ = newnode(Return, NULL); addchild($$, newnode(Null, NULL)); Tracker(getchild($$, 0), @1.first_line, @1.first_column); }
          | RETURN Expr SEMI                                                 { $$ = newnode(Return, NULL); addchild($$, $2); Tracker(getchild($$, 0), @2.first_line, @2.first_column);}
          | LBRACE error RBRACE                                              { $$ = newnode(Null, NULL); has_error = 1; }
