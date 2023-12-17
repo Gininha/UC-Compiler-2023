@@ -66,6 +66,14 @@ int codegen_div(struct node *div) {
     return temporary++;
 }
 
+int codegen_mod(struct node *mod) {
+    int e1 = codegen_expression(getchild(mod, 0));
+    int e2 = codegen_expression(getchild(mod, 1));
+    printf("  %%%d = srem i32 %%%d, %%%d\n", temporary, e1, e2);
+    return temporary++;
+}
+
+
 int codegen_natural(struct node *natural) {
     printf("  %%%d = add i32 %s, 0\n", temporary, natural->token);
     return temporary++;
@@ -129,24 +137,37 @@ int codegen_ifthenelse(struct node *ifthenelse) {
     int label_id = temporary++;
     printf("  %%%d = alloca i32\n", label_id);
     int e = codegen_expression(getchild(ifthenelse, 0));
+    int e1 = 0, e2 = 0;
     printf("  %%%d = icmp ne i32 %%%d, 0\n", temporary, e);
     printf("  br i1 %%%d, label %%L%dthen, label %%L%delse\n", temporary++, label_id, label_id);
 
     printf("L%dthen:\n", label_id);
-    int e1 = codegen_expression(getchild(ifthenelse, 1));
-    if (e1 != -1) {
+    if(getchild(ifthenelse, 1)->category != Return){
+        e1 = codegen_expression(getchild(ifthenelse, 1));
+        if (e1 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
+    }else{
+        e1 = codegen_expression(getchild(getchild(ifthenelse, 1), 0));
         printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
         printf("  br label %%L%dend\n", label_id);
-    } else
-        printf("  br label %%L%dend\n", label_id);
+    }
 
     printf("L%delse:\n", label_id);
-    int e2 = codegen_expression(getchild(ifthenelse, 2));
-    if (e2 != -1) {
+    if(getchild(ifthenelse, 1)->category != Return){
+        e2 = codegen_expression(getchild(ifthenelse, 2));
+        if (e2 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
+    }else{
+        e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
         printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
         printf("  br label %%L%dend\n", label_id);
-    } else
-        printf("  br label %%L%dend\n", label_id);
+    }
 
     printf("L%dend:\n", label_id);
     printf("  %%%d = load i32, i32* %%%d\n", temporary, label_id);
@@ -381,6 +402,9 @@ int codegen_expression(struct node *expression) {
     case Div:
         tmp = codegen_div(expression);
         break;
+    case Mod:
+        tmp = codegen_mod(expression);
+        break;
     case While:
         tmp = codegen_while(expression);
         break;
@@ -507,7 +531,7 @@ void codegen_function(struct node *function) {
     flag = codegen_funcbody(getchild(function, 3));
     if (!flag) {
         if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
-            printf("  ret i32 1\n");
+            printf("  ret i32 %%%d\n", temporary-1);
         if (getchild(function, 0)->category == Double)
             printf("  ret double 1.0\n");
         if (getchild(function, 0)->category == Void)
