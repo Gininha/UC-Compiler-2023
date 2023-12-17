@@ -30,10 +30,10 @@ L8then:
   store i32 %15, i32* %8
   br label %L8end
 L8else:
-  %16 = load i32, i32* %_a
-  %17 = load i32, i32* %_b
-  %18 = add i32 %16, %17
-  store i32 %18, i32* %_c
+  %16 = load double, double* %_a
+  %17 = load double, double* %_b
+  %18 = fadd double %16, %17
+  store double %18, double* %_c
   br label %L19
 L19:
   %19 = load i32, i32* %_d
@@ -55,10 +55,10 @@ L19End:
   br label %L8end
 L8end:
   %29 = load i32, i32* %8
-  ret double 1
+  ret double 1.0
 }
 
-define i32 @main() {
-  %1 = call i32 @_main()
-  ret i32 %1
+define double @main() {
+  %1 = call double @_main()
+  ret double %1
 }

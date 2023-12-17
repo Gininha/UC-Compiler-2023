@@ -37,7 +37,10 @@ int get_value(char *string) {
 int codegen_add(struct node *add) {
     int e1 = codegen_expression(getchild(add, 0));
     int e2 = codegen_expression(getchild(add, 1));
-    printf("  %%%d = add i32 %%%d, %%%d\n", temporary, e1, e2);
+    if(add->type == double_type)
+        printf("  %%%d = fadd double %%%d, %%%d\n", temporary, e1, e2);
+    else
+        printf("  %%%d = add i32 %%%d, %%%d\n", temporary, e1, e2);
 
     return temporary++;
 }
@@ -77,8 +80,12 @@ int codegen_identifier(struct node *identifier) {
 
     if (search_symbol(symbol_table, identifier->token)) // Variavel global
         printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
-    else
-        printf("  %%%d = load i32, i32* %%_%s\n", temporary, identifier->token);
+    else{
+        if(identifier->type == double_type)
+            printf("  %%%d = load double, double* %%_%s\n", temporary, identifier->token);
+        else
+            printf("  %%%d = load i32, i32* %%_%s\n", temporary, identifier->token);
+    }
 
     return temporary++;
 }
@@ -306,8 +313,12 @@ int codegen_store(struct node *store_node) {
 
     if (search_symbol(symbol_table, target->token)) // Variavel global
         printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
-    else
-        printf("  store i32 %%%d, i32* %%_%s\n", value_tmp, target->token);
+    else{
+        if(target->type == double_type){
+            printf("  store double %%%d, double* %%_%s\n", value_tmp, target->token);
+        }else
+            printf("  store i32 %%%d, i32* %%_%s\n", value_tmp, target->token);
+    }
 
     return temporary;
 }
@@ -491,7 +502,7 @@ void codegen_function(struct node *function) {
         if (getchild(function, 0)->category == Int || getchild(function, 0)->category == Short || getchild(function, 0)->category == Char)
             printf("  ret i32 1\n");
         if (getchild(function, 0)->category == Double)
-            printf("  ret double 1\n");
+            printf("  ret double 1.0\n");
         if (getchild(function, 0)->category == Void)
             printf("  ret void\n");
     }
@@ -568,16 +579,24 @@ void codegen_program(struct node *program) {
     struct symbol_list *entry = search_symbol(symbol_table, "main");
     temporary = 1;
     if (entry != NULL && entry->node->category == FuncDefinition) {
-        printf("define i32 @main() {\n");
+        if(entry->type == double_type)
+            printf("define double @main() {\n");
+        else
+            printf("define i32 @main() {\n");
 
         function = program->children;
         while ((function = function->next) != NULL) {
             if (function->node->category == Declaration)
                 codegen_global_aux(function->node);
         }
-
-        printf("  %%%d = call i32 @_main()\n", temporary);
-        printf("  ret i32 %%1\n"
-               "}\n");
+        if(entry->type == double_type){
+            printf("  %%%d = call double @_main()\n", temporary);
+            printf("  ret double %%1\n"
+                "}\n");
+        }else{
+            printf("  %%%d = call i32 @_main()\n", temporary);
+            printf("  ret i32 %%1\n"
+                "}\n");
+        }
     }
 }
