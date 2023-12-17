@@ -6,6 +6,7 @@
 #include <string.h>
 
 int temporary;
+struct node *aux_func_parameters;
 
 extern struct symbol_list *symbol_table;
 
@@ -35,7 +36,6 @@ int get_value(char *string) {
 }
 
 int codegen_add(struct node *add) {
-
     int e1 = codegen_expression(getchild(add, 0));
     int e2 = codegen_expression(getchild(add, 1));
     printf("  %%%d = add i32 %%%d, %%%d\n", temporary, e1, e2);
@@ -75,10 +75,30 @@ int codegen_decimal(struct node *decimal) {
 }
 
 int codegen_identifier(struct node *identifier) {
-    if (search_symbol(symbol_table, identifier->token)) // Variavel global
-        printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
-    else
-        printf("  %%%d = load i32, i32* %%%s\n", temporary, identifier->token);
+    struct node *parameter;
+    int curr = 0;
+    int flag = 0;
+    while ((parameter = getchild(aux_func_parameters, curr++)) != NULL) {
+        if (getchild(parameter, 0)->category != Void) {
+            if (strcmp(getchild(parameter, 1)->token, identifier->token) == 0) {
+                flag = 1;
+                break;
+            }
+        }
+    }
+
+    if (flag) {
+        if (search_symbol(symbol_table, identifier->token)) // Variavel global
+            printf("  %%%d = add i32 @%s, 0\n", temporary, identifier->token);
+        else
+            printf("  %%%d = add i32 %%%s, 0\n", temporary, identifier->token);
+    } else {
+        if (search_symbol(symbol_table, identifier->token)) // Variavel global
+            printf("  %%%d = load i32, i32* @%s\n", temporary, identifier->token);
+        else
+            printf("  %%%d = load i32, i32* %%%s\n", temporary, identifier->token);
+    }
+
     return temporary++;
 }
 
@@ -433,7 +453,8 @@ void codegen_function(struct node *function) {
     temporary = 1;
 
     printf("define i32 @_%s(", getchild(function, 1)->token);
-    codegen_parameters(getchild(function, 2));
+    aux_func_parameters = getchild(function, 2);
+    codegen_parameters(aux_func_parameters);
     printf(") {\n");
     flag = codegen_funcbody(getchild(function, 3));
     if (!flag)
