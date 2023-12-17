@@ -423,9 +423,32 @@ void codegen_parameters(struct node *parameters) {
             if (curr > 1)
                 printf(", ");
             if (getchild(parameter, 1))
-                printf("i32 %%_%s", getchild(parameter, 1)->token);
+                printf("i32 %%%s", getchild(parameter, 1)->token);
             else
                 printf("i32");
+        }
+    }
+
+    printf(") {\n");
+
+    curr = 0;
+
+    while ((parameter = getchild(parameters, curr++)) != NULL) {
+        if (getchild(parameter, 0)->category != Void) {
+            // Map UC data types to LLVM IR types
+            const char *llvm_type;
+            if (getchild(parameter, 0)->category == Int || getchild(parameter, 0)->category == Short || getchild(parameter, 0)->category == Char) {
+                llvm_type = "i32";
+            } else if (getchild(parameter, 0)->category == Double) {
+                llvm_type = "double";
+            }
+
+            // Code generation for initializing with a constant value (if provided)
+
+            // Code generation for variable declaration
+            printf("  %%_%s = alloca %s\n", getchild(parameter, 1)->token, llvm_type);
+
+            printf("  store %s %%%s, %s* %%_%s\n", llvm_type, getchild(parameter, 1)->token, llvm_type, getchild(parameter, 1)->token);
         }
     }
 }
@@ -438,7 +461,6 @@ void codegen_function(struct node *function) {
 
     printf("define i32 @_%s(", getchild(function, 1)->token);
     codegen_parameters(getchild(function, 2));
-    printf(") {\n");
     flag = codegen_funcbody(getchild(function, 3));
     if (!flag)
         printf("  ret i32 0\n");
