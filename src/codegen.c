@@ -150,9 +150,15 @@ int codegen_ifthenelse(struct node *ifthenelse) {
         } else
             printf("  br label %%L%dend\n", label_id);
     }else{
-        e1 = codegen_expression(getchild(getchild(ifthenelse, 1), 0));
-        printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
-        printf("  br label %%L%dend\n", label_id);
+        if(getchild(getchild(ifthenelse, 1), 0))
+            e1 = codegen_expression(getchild(getchild(ifthenelse, 1), 0));
+        else
+            e1 = -1;
+        if (e1 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e1, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
     }
 
     printf("L%delse:\n", label_id);
@@ -164,9 +170,15 @@ int codegen_ifthenelse(struct node *ifthenelse) {
         } else
             printf("  br label %%L%dend\n", label_id);
     }else{
-        e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
-        printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
-        printf("  br label %%L%dend\n", label_id);
+        if(getchild(getchild(ifthenelse, 2), 0))
+            e2 = codegen_expression(getchild(getchild(ifthenelse, 2), 0));
+        else
+            e2 = -1;
+        if (e2 != -1) {
+            printf("  store i32 %%%d, i32* %%%d\n", e2, label_id);
+            printf("  br label %%L%dend\n", label_id);
+        } else
+            printf("  br label %%L%dend\n", label_id);
     }
 
     printf("L%dend:\n", label_id);
@@ -404,7 +416,7 @@ void codegen_comma(struct node *comma) {
 }
 
 int codegen_expression(struct node *expression) {
-    char *category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null"};
+    //char *category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null"};
     int tmp = -1;
     switch (expression->category) {
     case Identifier:
@@ -501,8 +513,10 @@ int codegen_expression(struct node *expression) {
         codegen_comma(expression);
         break;
     default:
+        /*
         if (expression->category != Null)
             printf("\n-->%s\n", category_array[expression->category]);
+        */
         break;
     }
     return tmp;
