@@ -53,13 +53,16 @@ int sus(int x) {
 
 int main(void) {
 
-    int a = 10;
+    int a = 'a';
     int b = 0;
 
     funcao_bueda_fixe();
     testezito();
-    b = teste_c(a, 10);
-
+    putchar('-');
+    putchar('>');
+    b = teste_c(a, 2);
+    putchar(b);
+    putchar('\n');
     somaarg(3);
 
     putchar(sus(50));
