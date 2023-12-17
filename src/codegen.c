@@ -49,28 +49,41 @@ int codegen_add(struct node *add) {
 int codegen_sub(struct node *sub) {
     int e1 = codegen_expression(getchild(sub, 0));
     int e2 = codegen_expression(getchild(sub, 1));
-    printf("  %%%d = sub i32 %%%d, %%%d\n", temporary, e1, e2);
+    if (sub->type == double_type)
+        printf("  %%%d = fsub double %%%d, %%%d\n", temporary, e1, e2);
+    else
+        printf("  %%%d = sub i32 %%%d, %%%d\n", temporary, e1, e2);
     return temporary++;
 }
 
 int codegen_mul(struct node *mul) {
     int e1 = codegen_expression(getchild(mul, 0));
     int e2 = codegen_expression(getchild(mul, 1));
-    printf("  %%%d = mul i32 %%%d, %%%d\n", temporary, e1, e2);
+    if (mul->type == double_type)
+        printf("  %%%d = fmul double %%%d, %%%d\n", temporary, e1, e2);
+    else
+        printf("  %%%d = mul i32 %%%d, %%%d\n", temporary, e1, e2);
     return temporary++;
 }
 
 int codegen_div(struct node *div) {
     int e1 = codegen_expression(getchild(div, 0));
     int e2 = codegen_expression(getchild(div, 1));
-    printf("  %%%d = sdiv i32 %%%d, %%%d\n", temporary, e1, e2);
+    if (div->type == double_type)
+        printf("  %%%d = fdiv double %%%d, %%%d\n", temporary, e1, e2);
+    else
+        printf("  %%%d = sdiv i32 %%%d, %%%d\n", temporary, e1, e2);
     return temporary++;
 }
 
 int codegen_mod(struct node *mod) {
     int e1 = codegen_expression(getchild(mod, 0));
     int e2 = codegen_expression(getchild(mod, 1));
-    printf("  %%%d = srem i32 %%%d, %%%d\n", temporary, e1, e2);
+    if (mod->type == double_type) {
+        printf("  %%%d = frem double %%%d, %%%d\n", temporary, e1, e2);
+    } else {
+        printf("  %%%d = srem i32 %%%d, %%%d\n", temporary, e1, e2);
+    }
     return temporary++;
 }
 
@@ -369,14 +382,23 @@ int codegen_eq(struct node *eq_node) {
 
 int codegen_minus(struct node *minus) {
     int e1 = codegen_expression(getchild(minus, 0));
-    printf("  %%%d = sub i32 0, %%%d\n", temporary, e1);
+    if (minus->type == double_type) {
+        printf("  %%%d = fsub double 0, %%%d\n", temporary, e1);
+    } else {
+        printf("  %%%d = sub i32 0, %%%d\n", temporary, e1);
+    }
 
     return temporary++;
 }
 
+
 int codegen_plus(struct node *plus_node) {
     int e1 = codegen_expression(getchild(plus_node, 0));
-    printf("  %%%d = add i32 0, %%%d\n", temporary, e1);
+    if (plus_node->type == double_type) {
+        printf("  %%%d = fadd double 0, %%%d\n", temporary, e1);
+    } else {
+        printf("  %%%d = add i32 0, %%%d\n", temporary, e1);
+    }
     return temporary++;
 }
 
@@ -393,9 +415,12 @@ int codegen_store(struct node *store_node) {
 
     int value_tmp = codegen_expression(value);
 
-    if (search_symbol(symbol_table, target->token)) // Variavel global
-        printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
-    else {
+    if (search_symbol(symbol_table, target->token)){ // Variavel global
+        if (target->type == double_type) {
+            printf("  store double %%%d, double* @%s\n", value_tmp, target->token);
+        } else
+            printf("  store i32 %%%d, i32* @%s\n", value_tmp, target->token);
+    }else {
         if (target->type == double_type) {
             printf("  store double %%%d, double* %%_%s\n", value_tmp, target->token);
         } else
