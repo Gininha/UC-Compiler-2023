@@ -258,7 +258,7 @@ int codegen_eq(struct node *eq_node) {
 
 int codegen_minus(struct node *minus){
     int e1 = codegen_expression(getchild(minus, 0));
-    printf("  %%%d  = sub i32 0, %%%d\n", temporary, e1);
+    printf("  %%%d = sub i32 0, %%%d\n", temporary, e1);
 
     return temporary++;
 }
@@ -287,17 +287,10 @@ int codegen_store(struct node *store_node) {
 }
 
 int codegen_chrlit(struct node *chrlit_node) {
-    // Assuming the character literal is represented as 'Z'
 
     char char_value = get_value(chrlit_node->token);
 
-    // Determine the LLVM IR type for the character literal
-    const char *llvm_type = "i32";
-
-    // Code generation for the character literal
-    printf("  %%%d = alloca %s\n", temporary++, llvm_type);
-    printf("  store %s %d, %s* %%%d\n", llvm_type, char_value, llvm_type, temporary-1);
-    printf("  %%%d = load i32, i32* %%%d\n", temporary, temporary-1);
+    printf("  %%%d = add i32 %d, 0\n", temporary, char_value);
 
     return temporary++;
 }
