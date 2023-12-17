@@ -524,9 +524,11 @@ void codegen_global_dec(struct node *declaration) {
 
     if (value_node != NULL) {
         if (type_node->category == Double)
-            printf("@%s = global %s 0.0\n", identifier_node->token, llvm_type);
-        else
-            printf("@%s = global %s 0\n", identifier_node->token, llvm_type);
+            printf("@%s = global %s %s\n", identifier_node->token, llvm_type, value_node->token);
+        else{
+                int value = get_value(value_node->token);
+                printf("@%s = global %s %d\n", identifier_node->token, llvm_type, value);
+        }
     }
 }
 

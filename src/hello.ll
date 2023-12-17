@@ -1,14 +1,14 @@
 declare i32 @getchar()
 declare i32 @putchar(i32)
 @global_char = global i32 0
-@global_char1 = global i32 0
-@global_char2 = global i32 0
-@global_char3 = global i32 0
-@global_char4 = global i32 0
-@global_a = global i32 0
-@global_b = global i32 0
-@global_c = global i32 0
-@global_d = global double 0
+@global_char1 = global i32 255
+@global_char2 = global i32 4
+@global_char3 = global i32 36
+@global_char4 = global i32 228
+@global_a = global i32 65
+@global_b = global i32 66
+@global_c = global i32 67
+@global_d = global double 4.0
 define i32 @_main() {
   %_a = alloca i32
   %1 = add i32 68, 0
