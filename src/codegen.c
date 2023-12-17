@@ -209,13 +209,17 @@ int codegen_declaration(struct node *declaration) {
 }
 
 int codegen_return(struct node *return_node) {
+    //char *category_array[43] = {"Program", "Declaration", "FuncDeclaration", "FuncDefinition", "ParamList", "FuncBody", "ParamDeclaration", "StatList", "If", "While", "Return", "Or", "And", "Eq", "Ne", "Lt", "Gt", "Le", "Ge", "Add", "Sub", "Mul", "Div", "Mod", "Not", "Minus", "Plus", "Store", "Comma", "Call", "BitWiseAnd", "BitWiseXor", "BitWiseOr", "Char", "ChrLit", "Identifier", "Int", "Short", "Natural", "Double", "Decimal", "Void", "Null"};
+    
     struct node *return_value = getchild(return_node, 0);
 
     // Code generation for the return value
     int return_value_tmp = codegen_expression(return_value);
 
-    // Assuming the return type is always i32 for simplicity
-    printf("  ret i32 %%%d\n", return_value_tmp);
+    if(return_value->type == double_type){
+        printf("  ret double %%%d\n", return_value_tmp);
+    }else
+        printf("  ret i32 %%%d\n", return_value_tmp);
 
     return temporary;
 }
